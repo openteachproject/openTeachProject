@@ -35,6 +35,227 @@
 
 
 
+threadId_t threadGetId(void) {
+
+    _threadId_t                        returnValue;
+    _kernelState_t                     kernelState;
+
+    kernelState = _kernelGetState();
+    if (_kernelIsInInterrupt() || kernelState != KernelStateRunning) {
+        return NULL;
+    }
+    else {
+        returnValue = _kernelGetCurrentRunningThreadId();
+    }
+    return returnValue;
+}
+
+
+
+threadName_t threadGetName(threadId_t id) {
+
+    _threadName_t                       returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadGetNameArg_t                 threadGetNameArg;
+
+    if (id == NULL) {
+        returnValue = NULL;
+    }
+    else {
+        if (_kernelIsInInterrupt()) {
+
+            returnValue = NULL;
+        }
+        else {
+
+            threadGetNameArg . threadIdArg = id;
+
+            systemCallArg . systemCallNumber = ThreadGetNameSystemCallNumber;
+            systemCallArg . specificSystemCallArg = &threadGetNameArg;
+
+            _kernelSystemCall(&systemCallArg);
+            returnValue = threadGetNameArg . returnValue;
+        }
+    }
+
+    return returnValue;
+}
+
+
+
+void _threadGetNameSystemCall(_threadGetNameArg_t *arg) {
+
+    _threadControlBlock_t               *thread;
+    _threadId_t                         threadId;
+    _threadName_t                       threadName;
+
+    threadId = arg -> threadIdArg;
+    thread = (_threadControlBlock_t*)threadId;
+    threadName = thread -> name;
+
+    arg -> returnValue = threadName;
+    return;
+}
+
+
+
+threadState_t threadGetState(threadId_t id) {
+
+    _threadState_t                      returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadGetStateArg_t                threadGetStateArg;
+
+    if (id == NULL) {
+        returnValue = ThreadStateError;
+    }
+    else {
+
+        if (_kernelIsInInterrupt()) {
+
+            returnValue = ThreadStateError;
+        }
+        else {
+
+            threadGetStateArg . threadIdArg = id;
+
+            systemCallArg . systemCallNumber = ThreadGetStateSystemCallNumber;
+            systemCallArg . specificSystemCallArg = &threadGetStateArg;
+
+            _kernelSystemCall(&systemCallArg);
+            returnValue = threadGetStateArg . returnValue;
+        }
+    }
+
+    return returnValue;
+}
+
+
+
+void _threadGetStateSystemCall(_threadGetStateArg_t *arg) {
+
+    _threadControlBlock_t               *thread;
+    _threadId_t                         threadId;
+    _threadState_t                      threadState;
+
+    threadId = arg -> threadIdArg;
+    thread = (_threadControlBlock_t*)threadId;
+    threadState = thread -> state;
+
+    arg -> returnValue = threadState;
+    return;
+}
+
+
+
+threadPriority_t threadGetPriority(threadId_t id) {
+
+    _threadPriority_t                   returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadGetPriorityArg_t             threadGetPriorityArg;
+
+    if (id == NULL) {
+        returnValue = PriorityError;
+    }
+    else {
+
+        if (_kernelIsInInterrupt()) {
+
+            returnValue = PriorityError;
+        }
+        else {
+
+            threadGetPriorityArg . threadIdArg = id;
+
+            systemCallArg . systemCallNumber = ThreadGetPrioritySystemCallNumber;
+            systemCallArg . specificSystemCallArg = &threadGetPriorityArg;
+
+            _kernelSystemCall(&systemCallArg);
+            returnValue = threadGetPriorityArg . returnValue;
+        }
+    }
+
+    return returnValue;
+}
+
+
+
+void _threadGetPrioritySystemCall(_threadGetPriorityArg_t *arg) {
+
+    _threadControlBlock_t               *thread;
+    _threadId_t                         threadId;
+    _threadPriority_t                   threadPriority;
+
+    threadId = arg -> threadIdArg;
+    thread = (_threadControlBlock_t*)threadId;
+    threadPriority = thread -> priority;
+
+    arg -> returnValue = threadPriority;
+
+    return;
+}
+
+
+
+status_t threadSetPriority(threadId_t id, threadPriority_t priority) {
+    return StatusError;
+}
+
+
+
+void _threadSetPrioritySystemCall(_threadSetPriorityArg_t *arg) {
+
+}
+
+
+
+threadStackSize_t threadGetStackSize(threadId_t id) {
+
+    _threadStackSize_t                  returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadGetStackSizeArg_t            threadGetStackSizeArg;
+
+    if (id == NULL) {
+        returnValue = 0;
+    }
+    else {
+
+        if (_kernelIsInInterrupt()) {
+
+            returnValue = 0;
+        }
+        else {
+
+            threadGetStackSizeArg . threadIdArg = id;
+
+            systemCallArg . systemCallNumber = ThreadGetStackSizeSystemCallNumber;
+            systemCallArg . specificSystemCallArg = &threadGetStackSizeArg;
+
+            _kernelSystemCall(&systemCallArg);
+            returnValue = threadGetStackSizeArg . returnValue;
+        }
+    }
+
+    return returnValue;
+}
+
+
+
+void _threadGetStackSizeSystemCall(_threadGetStackSizeArg_t *arg) {
+
+    _threadControlBlock_t               *thread;
+    _threadId_t                         threadId;
+    _threadStackSize_t                  threadStackSize;
+
+    threadId = arg -> threadIdArg;
+    thread = (_threadControlBlock_t*)threadId;
+    threadStackSize = thread -> stackSize;
+
+    arg -> returnValue = threadStackSize;
+    return;
+}
+
+
+
 threadId_t threadCreateNew( threadName_t                name,
                             threadFunctionPointer_t     functionPointer,
                             threadFunctionParameter_t   functionParameter,
@@ -188,3 +409,66 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
     arg -> returnValue = returnValue;
     return;
 }
+
+
+
+status_t threadTerminate(threadId_t id) {
+    return StatusError;
+}
+
+
+
+void _threadTerminateSystemCall(_threadTerminateArg_t *arg) {
+
+}
+
+
+
+status_t threadYield(void) {
+    return StatusError;
+}
+
+
+
+void _threadYieldSystemCall(_threadYieldArg_t *arg) {
+
+}
+
+
+
+status_t threadSuspend(threadId_t id) {
+    return StatusError;
+}
+
+
+
+void _threadSuspendSystemCall(_threadSuspendArg_t *arg) {
+
+}
+
+
+
+status_t threadResume(threadId_t id) {
+    return StatusError;
+}
+
+
+
+void _threadResumeSystemCall(_threadResumeArg_t *arg) {
+
+}
+
+
+
+status_t threadWait(threadId_t id, kernelTick_t numberOfTicks) {
+    return StatusError;
+}
+
+
+
+void _threadWaitSystemCall(_threadWaitArg_t *arg) {
+
+}
+
+
+

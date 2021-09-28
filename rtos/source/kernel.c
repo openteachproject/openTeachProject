@@ -105,8 +105,39 @@ _status_t _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg) {
     systemCallNumber = systemCallArg -> systemCallNumber;
 
     switch (systemCallNumber) {
+
+        case ThreadGetNameSystemCallNumber:
+            _threadGetNameSystemCall(specificSystemCallArg);
+            break;
+        case ThreadGetStateSystemCallNumber:
+            _threadGetStateSystemCall(specificSystemCallArg);
+            break;
+        case ThreadGetPrioritySystemCallNumber:
+            _threadGetPrioritySystemCall(specificSystemCallArg);
+            break;
+        case ThreadSetPrioritySystemCallNumber:
+            _threadSetPrioritySystemCall(specificSystemCallArg);
+            break;
+        case ThreadGetStackSizeSystemCallNumber:
+            _threadGetStackSizeSystemCall(specificSystemCallArg);
+            break;
         case ThreadCreateNewSystemCallNumber:
             _threadCreateNewSystemCall(specificSystemCallArg);
+            break;
+        case ThreadTerminateSystemCallNumber:
+            _threadTerminateSystemCall(specificSystemCallArg);
+            break;
+        case ThreadYieldSystemCallNumber:
+            _threadYieldSystemCall(specificSystemCallArg);
+            break;
+        case ThreadSuspendSystemCallNumber:
+            _threadSuspendSystemCall(specificSystemCallArg);
+            break;
+        case ThreadResumeSystemCallNumber:
+            _threadResumeSystemCall(specificSystemCallArg);
+            break;
+        case ThreadWaitSystemCallNumber:
+            _threadWaitSystemCall(specificSystemCallArg);
             break;
 
 
@@ -134,7 +165,7 @@ _status_t _kernelContextSwitch(void) {
      * thread and put it in next running thread.
      * */
     priority = NumberOfPriorityLevels - 1;
-    while(priority > 0) {
+    while(priority >= 0) {
         if (_listIsEmptyReadyList(priority) == true) {
             priority--;
         }
@@ -247,7 +278,7 @@ _status_t _kernelStart(void) {
      * Find most prior thread and set it as first running thread.
      * */
     priority = NumberOfPriorityLevels - 1;
-    while(priority > 0) {
+    while(priority >= 0) {
         if (_listIsEmptyReadyList(priority) == true) {
             priority--;
         }

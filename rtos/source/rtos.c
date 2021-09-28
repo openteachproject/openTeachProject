@@ -28,16 +28,61 @@
 
 
 #include <rtos/include/rtosTypeDefinitions.h>
+#include <rtos/include/systemCallTypeDefintions.h>
 #include <rtos/include/kernel.h>
 #include <rtos/include/rtos.h>
 
 
 
+void idleThreadFunction(threadFunctionParameter_t parameter) {
+    while(true) {
+
+    }
+}
+
+
+
+static threadId_t rtosCreateIdleThread( threadName_t                name,
+                                        threadFunctionPointer_t     functionPointer,
+                                        threadFunctionParameter_t   functionParameter,
+                                        threadPriority_t            priority,
+                                        threadStackSize_t           stackSize
+                                        )
+{
+
+    _threadId_t                         returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadCreateNewArg_t               threadCreateNewArg;
+
+    threadCreateNewArg . threadNameArg = name;
+    threadCreateNewArg . threadFunctionPointerArg = functionPointer;
+    threadCreateNewArg . threadFunctionParameterArg = functionParameter;
+    threadCreateNewArg . threadPriorityArg = priority;
+    threadCreateNewArg . threadStackSizeArg = stackSize;
+
+    systemCallArg . systemCallNumber = ThreadCreateNewSystemCallNumber;
+    systemCallArg . specificSystemCallArg = &threadCreateNewArg;
+
+    _kernelSystemCall(&systemCallArg);
+
+    returnValue = threadCreateNewArg . returnValue;
+
+    return returnValue;
+}
+
+
+
 status_t rtosInitialize(void) {
-    return _kernelInitialize();
+
+    _status_t                           returnValue;
+
+    returnValue = _kernelInitialize();
+    rtosCreateIdleThread("IdleThread", idleThreadFunction, NULL, PriorityIdle, 256);
+    return returnValue;
 }
 
 status_t rtosStart(void) {
+
     return _kernelStart();
 }
 

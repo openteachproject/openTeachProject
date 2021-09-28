@@ -64,12 +64,23 @@ status_t                                    rtosStart(void);
 
 
 
-threadId_t                                  threadCreateNew(    threadName_t                 name,
+threadId_t                                  threadGetId(void);
+threadName_t                                threadGetName(threadId_t id);
+threadState_t                               threadGetState(threadId_t id);
+threadPriority_t                            threadGetPriority(threadId_t id);
+status_t                                    threadSetPriority(threadId_t id, threadPriority_t priority);
+threadStackSize_t                           threadGetStackSize(threadId_t id);
+threadId_t                                  threadCreateNew(    threadName_t                name,
                                                                 threadFunctionPointer_t     functionPointer,
-                                                                threadFunctionParameter_t     functionParameter,
+                                                                threadFunctionParameter_t   functionParameter,
                                                                 threadPriority_t            priority,
-                                                                threadStackSize_t            stackSize
+                                                                threadStackSize_t           stackSize
                                                                 );
+status_t                                    threadTerminate(threadId_t id);
+status_t                                    threadYield(void);
+status_t                                    threadSuspend(threadId_t id);
+status_t                                    threadResume(threadId_t id);
+status_t                                    threadWait(threadId_t id, kernelTick_t numberOfTicks);
 
 
 
