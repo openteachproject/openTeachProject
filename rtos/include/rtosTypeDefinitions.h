@@ -54,6 +54,8 @@
 
 #define ThreadNameMaxLength                 32
 
+#define NumberOfWaitLists                   8
+
 #define ThreadDefaultStackSize              1024
 #define ThreadMaximumStackSize              32 * 1024
 
@@ -108,6 +110,7 @@ enum _status
     StatusErrorThreadState                  = 7,
     StatusErrorResource                     = 8,
     StatusErrorTimeOut                      = 9,
+    StatusWait                              = 10,
     StatusErrorKernelState                  = 0xFFFFFFFF
 };
 
@@ -126,6 +129,7 @@ enum _threadState
 {
     ThreadStateRunning                      = 0,
     ThreadStateReady                        = 1,
+    ThreadStateWaited                       = 2,
     ThreadStateError                        = 0xFFFFFFFF
 };
 
@@ -143,6 +147,9 @@ typedef uint32_t                            _kernelSystemCallListIndex_t;
 typedef uint32_t                            _kernelSystemCallNumber_t;
 typedef circularQueue_t                     _kernelReadyList_t;
 typedef circularQueueNode_t                 _kernelReadyNode_t;
+typedef queue_t                             _kernelWaitList_t;
+typedef queueNode_t                         _kernelWaitNode_t;
+typedef uint32_t                            _kernelWaitListNumber_t;
 typedef enum _kernelRequest                 _kernelRequest_t;
 typedef enum _status                        _status_t;
 typedef bool                                _bool_t;
@@ -187,8 +194,10 @@ struct _kernelControlBlock {
     _kernelSystemCallArg_t                  **systemCallList;
     _kernelSystemCallListIndex_t            systemCallListIndex;
     _kernelReadyList_t                      *readyList[NumberOfPriorityLevels];
+    _kernelWaitList_t                       *waitList[NumberOfWaitLists];
     _kernelRequest_t                        systemCallHandlerRequest;
     _kernelRequest_t                        contextSwitchRequest;
+    _kernelRequest_t                        waitListHandlerRequest;
 };
 
 
@@ -204,6 +213,8 @@ struct _threadControlBlock {
     _threadStackPointer_t                   stackTop;
     _threadStackPointer_t                   stackPointer;
     _kernelReadyNode_t                      *readyNode;
+    _kernelWaitNode_t                       *waitNode;
+    _kernelTick_t                           returnTick;
 };
 
 

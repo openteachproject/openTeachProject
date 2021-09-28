@@ -50,6 +50,15 @@ PendSV_Handler:
 
 
 
+.LCheckForWaitListHandlerStart:
+            BL                          _kernelGetWaitListHandlerRequest
+            SUBS                        R0, #1
+            IT                          EQ
+            BEQ                         .LWatListHandler
+.LCheckForWaitListHandlerEnd:
+
+
+
             B                           .LPendSvHandlerExit
 
 
@@ -67,6 +76,12 @@ PendSV_Handler:
             MSR                         PSP, R3
             BL                          _kernelUnsetContextSwitchReuest
             B                           .LContextSwitchEnd
+
+
+
+.LWatListHandler:
+            BL                          _portSupervisorInterruptTrigger
+            B                           .LCheckForWaitListHandlerEnd
 
 
 
@@ -99,6 +114,15 @@ SVC_Handler:
 
 
 
+.LWatListHandlerStart:
+            BL                          _kernelGetWaitListHandlerRequest
+            SUBS                        R0, #1
+            IT                          EQ
+            BEQ                         .LWaitListHandler
+.LWatListHandlerEnd:
+
+
+
             B                           .LSvcHandlerExit
 
 
@@ -107,6 +131,13 @@ SVC_Handler:
             BL                          _kernelSystemCallHandler
             BL                          _kernelUnsetSystemCallRequest
             B                           .LSystemCallEnd
+
+
+
+.LWaitListHandler:
+            BL                          _kernelWaitListHandler
+            BL                          _kernelUnsetWaitListHandlerReuest
+            B                           .LWatListHandlerEnd
 
 
 
@@ -128,6 +159,7 @@ SysTick_Handler:
 
             PUSH                        {R0, LR}
             BL                          _kernelIncreaseTick
+            BL                          _kernelWaitListHandlerRequest
             BL                          _kernelContextSwitchRequest
             POP                         {R0, LR}
             BX                          LR

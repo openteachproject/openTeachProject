@@ -48,4 +48,16 @@ _bool_t                                 _listIsEmptyReadyList(_threadPriority_t 
 
 
 
+_kernelWaitNode_t                      *_listCreateNewWaitNode(_threadId_t id);
+_kernelWaitList_t                      *_listCreateNewWaitList(void);
+_status_t                               _listInsertToWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber);
+_status_t                               _listDeleteFromWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber);
+_threadId_t                             _listGetFirstWaitList(_kernelWaitListNumber_t waitListNumber);
+_threadId_t                             _listGetNextWaitList(_kernelWaitListNumber_t waitListNumber, _threadId_t id);
+_listSize_t                             _listGetTotalSizeOfWaitLists(void);
+_listSize_t                             _listGetSizeWaitList(_kernelWaitListNumber_t waitListNumber);
+_bool_t                                 _listIsEmptyWaitList(_kernelWaitListNumber_t waitListNumber);
+
+
+
 #endif /* RTOS_INCLUDE_LIST_H_ */

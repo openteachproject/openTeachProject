@@ -46,6 +46,7 @@ _status_t                               _kernelSystemCall(_kernelSystemCallArg_t
 _status_t                               _kernelSystemCallHandler(void);
 _status_t                               _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg);
 _status_t                               _kernelContextSwitch(void);
+_status_t                               _kernelWaitListHandler(void);
 
 _status_t                               _kernelInitialize(void);
 _status_t                               _kernelStart(void);
@@ -75,9 +76,11 @@ _threadFunctionParameter_t              _kernelGetCurrentRunningThreadFunctionPa
 
 _status_t                               _kernelSystemCallListInitialize(void);
 _status_t                               _kernelReadyListInitialize(void);
+_status_t                               _kernelWaitListInitialize(void);
 
 _status_t                               _kernelSystemCallRequest(void);
 _status_t                               _kernelContextSwitchRequest(void);
+_status_t                               _kernelWaitListHandlerRequest(void);
 
 _kernelRequest_t                        _kernelGetSystemCallRequest(void);
 _status_t                               _kernelSetSystemCallRequest(void);
@@ -86,6 +89,10 @@ _status_t                               _kernelUnsetSystemCallRequest(void);
 _kernelRequest_t                        _kernelGetContextSwitchRequest(void);
 _status_t                               _kernelSetContextSwitchRequest(void);
 _status_t                               _kernelUnsetContextSwitchReuest(void);
+
+_kernelRequest_t                        _kernelGetWaitListHandlerRequest(void);
+_status_t                               _kernelSetWaitListHandlerRequest(void);
+_status_t                               _kernelUnsetWaitListHandlerReuest(void);
 
 _bool_t                                 _kernelIsInInterrupt(void);
 

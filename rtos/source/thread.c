@@ -311,6 +311,7 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
     _threadStackPointer_t                  threadStackTop;
     _threadStackSize_t                     threadStackSize;
     _kernelReadyNode_t                    *threadReadyNode;
+    _kernelWaitNode_t                     *threadWaitNode;
 
     while(true) {
         newThread = (_threadControlBlock_t*)malloc(sizeof(_threadControlBlock_t));
@@ -380,6 +381,17 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
             newThread -> readyNode = threadReadyNode;
         }
 
+        threadWaitNode = _listCreateNewWaitNode(threadId);
+        if (threadReadyNode == NULL) {
+            returnValue = NULL;
+            break;
+        }
+        else {
+            newThread -> waitNode = threadWaitNode;
+        }
+
+        newThread -> returnTick = 0;
+
 
 
         break;
@@ -392,6 +404,7 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
         free(threadName);
         free(threadStackLimit);
         free(threadReadyNode);
+        free(threadWaitNode);
     }
     else {
         if (_listInsertToReadyList(threadId) == StatusOk) {
@@ -461,13 +474,82 @@ void _threadResumeSystemCall(_threadResumeArg_t *arg) {
 
 
 status_t threadWait(threadId_t id, kernelTick_t numberOfTicks) {
-    return StatusError;
+
+    _status_t                           returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadWaitArg_t                    threadWaitArg;
+
+    if (id == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+
+        if (_kernelIsInInterrupt()) {
+
+            returnValue = StatusErrorInerrupt;
+        }
+        else {
+
+            threadWaitArg . threadIdArg = id;
+            threadWaitArg . numberOfTicksArg = numberOfTicks;
+
+            systemCallArg . systemCallNumber = ThreadWaitSystemCallNumber;
+            systemCallArg . specificSystemCallArg = &threadWaitArg;
+
+            _kernelSystemCall(&systemCallArg);
+
+            returnValue = threadWaitArg . returnValue;
+        }
+
+    }
+
+    return returnValue;
 }
 
 
 
 void _threadWaitSystemCall(_threadWaitArg_t *arg) {
 
+    _threadControlBlock_t               *thread;
+    _threadId_t                         threadId;
+    _kernelTick_t                       returnTick;
+    _kernelTick_t                       currentTick;
+    _kernelTick_t                       numberOfTicks;
+    _kernelWaitListNumber_t             waitListNumber;
+
+    threadId = arg -> threadIdArg;
+    thread = (_threadControlBlock_t*)threadId;
+
+    numberOfTicks = arg -> numberOfTicksArg;
+
+    currentTick = _kernelGetTick();
+    returnTick = currentTick + numberOfTicks;
+    waitListNumber = returnTick % NumberOfWaitLists;
+
+    thread -> returnTick = returnTick;
+
+    if (thread -> state == ThreadStateRunning) {
+
+        _listDeleteFromReadyList(threadId);
+    }
+    else if (thread -> state == ThreadStateReady) {
+
+        _listDeleteFromReadyList(threadId);
+    }
+    else {
+        //Do noting
+    }
+
+    _listInsertToWaitList(threadId, waitListNumber);
+    thread -> state = ThreadStateWaited;
+
+    if (_kernelCheckForContextSwitchAfterDelete(threadId) == true) {
+
+        _kernelContextSwitchRequest();
+    }
+
+    arg -> returnValue = StatusOk;
+    return;
 }
 
 

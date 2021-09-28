@@ -203,6 +203,54 @@ _status_t _kernelContextSwitch(void) {
     return StatusOk;
 }
 
+_status_t _kernelWaitListHandler(void) {
+
+    _kernelWaitListNumber_t             waitListNumber;
+    _listSize_t                         listSize;
+    _kernelTick_t                       currentTick;
+    _threadControlBlock_t               *thread;
+    _threadId_t                         threadId;
+    _threadId_t                         nextThreadId;
+    _kernelTick_t                       returnTick;
+
+    currentTick = _kernelGetTick();
+    waitListNumber = currentTick % NumberOfWaitLists;
+
+    listSize = _listGetSizeWaitList(waitListNumber);
+
+    if (listSize > 0) {
+
+        threadId = _listGetFirstWaitList(waitListNumber);
+
+        for (_listSize_t index = 0 ; index < listSize ; index++) {
+
+            thread = (_threadControlBlock_t*)threadId;
+            returnTick = thread -> returnTick;
+
+            if (currentTick == returnTick) {
+
+                nextThreadId = _listGetNextWaitList(waitListNumber, threadId);
+                _listDeleteFromWaitList(threadId, waitListNumber);
+                thread -> returnTick = 0;
+
+                _listInsertToReadyList(threadId);
+                thread -> state = ThreadStateReady;
+
+                if (_kernelCheckForContextSwitchAfterInsert(threadId) == true) {
+                    _kernelContextSwitchRequest();
+                }
+
+            }
+            else {
+                nextThreadId = _listGetNextWaitList(waitListNumber, threadId);
+            }
+            threadId = nextThreadId;
+        }
+    }
+
+    return StatusOk;
+}
+
 _status_t _kernelInitialize(void) {
 
     _status_t                           returnValue = StatusOk;
@@ -249,6 +297,11 @@ _status_t _kernelInitialize(void) {
             break;
         }
 
+        returnValue = _kernelWaitListInitialize();
+        if (returnValue != StatusOk) {
+            break;
+        }
+
         break;
     }
     if (returnValue != StatusOk) {
@@ -259,6 +312,10 @@ _status_t _kernelInitialize(void) {
 
         for(_listSize_t index = 0 ; index < NumberOfPriorityLevels ; index++) {
             free(kernel -> readyList[index]);
+        }
+
+        for(_listSize_t index = 0 ; index < NumberOfWaitLists ; index++) {
+            free(kernel -> waitList[index]);
         }
     }
 
@@ -548,6 +605,40 @@ _status_t _kernelReadyListInitialize(void) {
     return returnValue;
 }
 
+_status_t _kernelWaitListInitialize(void) {
+    _status_t                            returnValue;
+    _kernelControlBlock_t                *kernel;
+    _kernelWaitList_t                    *list;
+
+    returnValue = StatusOk;
+    kernel = _kernelGetKernelControlBlock();
+
+
+    /*
+     * Allocate memory to wait list(array). If list creation was unsuccessful
+     * delete all of created lists.
+     * */
+    for(_listSize_t index = 0 ; index < NumberOfWaitLists ; index++) {
+        list = _listCreateNewWaitList();
+        if (list == NULL) {
+            returnValue = StatusErrorHeapMemory;
+            break;
+        }
+        else {
+            kernel -> waitList[index] = list;
+        }
+    }
+    if (returnValue == StatusErrorHeapMemory) {
+        for(_listSize_t index = 0 ; index < NumberOfWaitLists ; index++) {
+            free(kernel -> waitList[index]);
+        }
+    }
+
+
+
+    return returnValue;
+}
+
 _status_t _kernelSystemCallRequest(void) {
 
     _kernelSetSystemCallRequest();
@@ -560,6 +651,13 @@ _status_t _kernelSystemCallRequest(void) {
 _status_t _kernelContextSwitchRequest(void) {
 
     _kernelSetContextSwitchRequest();
+    _portPreSupervisorInterruptTrigger();
+    return StatusOk;
+}
+
+_status_t _kernelWaitListHandlerRequest(void) {
+
+    _kernelSetWaitListHandlerRequest();
     _portPreSupervisorInterruptTrigger();
     return StatusOk;
 }
@@ -617,6 +715,34 @@ _status_t _kernelUnsetContextSwitchReuest(void) {
 
     kernel = _kernelGetKernelControlBlock();
     kernel -> contextSwitchRequest = KernelRequestUnSet;
+    return StatusOk;
+}
+
+_kernelRequest_t _kernelGetWaitListHandlerRequest(void) {
+
+    _kernelRequest_t                    returnValue;
+    _kernelControlBlock_t                *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    returnValue = kernel -> waitListHandlerRequest;
+    return returnValue;
+}
+
+_status_t _kernelSetWaitListHandlerRequest(void) {
+
+    _kernelControlBlock_t                *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    kernel -> waitListHandlerRequest = KernelRequestSet;
+    return StatusOk;
+}
+
+_status_t _kernelUnsetWaitListHandlerReuest(void) {
+
+    _kernelControlBlock_t                *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    kernel -> waitListHandlerRequest = KernelRequestUnSet;
     return StatusOk;
 }
 

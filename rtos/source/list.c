@@ -206,3 +206,182 @@ _bool_t _listIsEmptyReadyList(_threadPriority_t priority) {
     }
     return returnValue;
 }
+
+
+
+_kernelWaitNode_t* _listCreateNewWaitNode(_threadId_t id) {
+
+    _kernelWaitNode_t                    *newNode;
+
+    if (id == NULL) {
+        newNode = NULL;
+    }
+    else {
+        newNode = QueueCreateNewNode(id, 0);
+    }
+    return newNode;
+}
+
+_kernelWaitList_t* _listCreateNewWaitList(void) {
+
+    _kernelWaitList_t                    *newList;
+
+    newList = QueueCreateNewQueue();
+    return newList;
+}
+
+_status_t _listInsertToWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber) {
+
+    _status_t                            returnValue;
+    _kernelWaitList_t                    *list;
+    _kernelWaitNode_t                    *node;
+    _kernelControlBlock_t                *kernel;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL || waitListNumber >= NumberOfWaitLists) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        thread = (_threadControlBlock_t*)id;
+        list = kernel -> waitList[waitListNumber];
+        node = thread -> waitNode;
+        QueueEnqueue(list, node);
+        returnValue = StatusOk;
+    }
+    return returnValue;
+}
+
+_status_t _listDeleteFromWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber) {
+
+    _status_t                            returnValue;
+    _kernelWaitList_t                    *list;
+    _kernelWaitNode_t                    *node;
+    _kernelControlBlock_t                *kernel;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL || waitListNumber >= NumberOfWaitLists) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        thread = (_threadControlBlock_t*)id;
+        list = kernel -> waitList[waitListNumber];
+        node = thread -> waitNode;
+        if (thread -> state == ThreadStateWaited) {
+            QueueDeleteNode(list, node);
+            returnValue = StatusOk;
+        }
+        else {
+            returnValue = StatusErrorList;
+        }
+    }
+    return returnValue;
+}
+
+_threadId_t _listGetFirstWaitList(_kernelWaitListNumber_t waitListNumber) {
+
+    _threadId_t                          firstThreadId;
+    _kernelWaitList_t                    *list;
+    _kernelWaitNode_t                    *node;
+    _kernelControlBlock_t                *kernel;
+
+    if (waitListNumber >= NumberOfWaitLists) {
+        firstThreadId = NULL;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        list = kernel -> waitList[waitListNumber];
+        if (QueueGetSize(list) == 0) {
+            firstThreadId = NULL;
+        }
+        else {
+            node = QueueHead(list);
+            firstThreadId = (_threadId_t)(node -> element);
+        }
+    }
+    return firstThreadId;
+}
+
+_threadId_t _listGetNextWaitList(_kernelWaitListNumber_t waitListNumber, _threadId_t id) {
+
+    _threadId_t                          nextThreadId;
+    _kernelWaitList_t                    *list;
+    _kernelWaitNode_t                    *node;
+    _kernelWaitNode_t                    *nextNode;
+    _kernelControlBlock_t                *kernel;
+    _threadControlBlock_t                *thread;
+
+    if (waitListNumber >= NumberOfWaitLists || id == NULL) {
+        nextThreadId = NULL;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        thread = (_threadControlBlock_t*)id;
+        list = kernel -> waitList[waitListNumber];
+        node = thread -> waitNode;
+        if (thread -> state == ThreadStateWaited || thread -> state == ThreadStateReady) {
+            if (QueueGetSize(list) == 1) {
+                nextNode = node;
+            }
+            else {
+                nextNode = QueueGetNextNode(node);
+            }
+            nextThreadId = (_threadId_t)(nextNode -> element);
+        }
+        else {
+            nextThreadId = NULL;
+        }
+    }
+    return nextThreadId;
+}
+
+_listSize_t _listGetTotalSizeWaitList(void) {
+
+    _listSize_t                          listSize = 0;
+    _kernelWaitList_t                    *list;
+    _kernelControlBlock_t                *kernel;
+    _kernelWaitListNumber_t              waitListNumber = 0;
+
+    kernel = _kernelGetKernelControlBlock();
+    while(waitListNumber < NumberOfWaitLists) {
+        list = kernel -> waitList[waitListNumber];
+        listSize = listSize + QueueGetSize(list);
+        waitListNumber++;
+    }
+    return listSize;
+}
+
+_listSize_t _listGetSizeWaitList(_kernelWaitListNumber_t waitListNumber) {
+
+    _listSize_t                          listSize;
+    _kernelWaitList_t                    *list;
+    _kernelControlBlock_t                *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    list = kernel -> waitList[waitListNumber];
+    listSize = QueueGetSize(list);
+    return listSize;
+}
+
+_bool_t _listIsEmptyWaitList(_kernelWaitListNumber_t waitListNumber) {
+
+    _bool_t                              returnValue;
+    _kernelWaitList_t                    *list;
+    _kernelControlBlock_t                *kernel;
+
+    if (waitListNumber >= NumberOfWaitLists) {
+        returnValue = false;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        list = kernel -> waitList[waitListNumber];
+        if (QueueGetSize(list) == 0) {
+            returnValue = true;
+        }
+        else {
+            returnValue = false;
+        }
+    }
+    return returnValue;
+}
