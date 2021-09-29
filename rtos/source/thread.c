@@ -312,6 +312,7 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
     _threadStackSize_t                     threadStackSize;
     _kernelReadyNode_t                    *threadReadyNode;
     _kernelWaitNode_t                     *threadWaitNode;
+    _semaphoreWaitNode_t                  *semaphoreWaitNode;
 
     while(true) {
         newThread = (_threadControlBlock_t*)malloc(sizeof(_threadControlBlock_t));
@@ -392,6 +393,19 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
 
         newThread -> returnTick = 0;
 
+        semaphoreWaitNode = _listCreateNewSemaphoreWaitNode(threadId);
+        if (semaphoreWaitNode == NULL) {
+            returnValue = NULL;
+            break;
+        }
+        else {
+            newThread -> semaphoreWaitNode = semaphoreWaitNode;
+        }
+
+        newThread -> semaphoreWaitingFor = NULL;
+
+        newThread -> returnedByRelease = ReturnedByReleaseUnset;
+
 
 
         break;
@@ -405,6 +419,7 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
         free(threadStackLimit);
         free(threadReadyNode);
         free(threadWaitNode);
+        free(semaphoreWaitNode);
     }
     else {
         if (_listInsertToReadyList(threadId) == StatusOk) {

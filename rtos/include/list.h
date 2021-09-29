@@ -60,4 +60,15 @@ _bool_t                                 _listIsEmptyWaitList(_kernelWaitListNumb
 
 
 
+_semaphoreWaitNode_t                   *_listCreateNewSemaphoreWaitNode(_threadId_t id);
+_semaphoreWaitList_t                   *_listCreateNewSemaphoreWaitList(void);
+_status_t                               _listInsertToSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId);
+_status_t                               _listDeleteFromSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId);
+_threadId_t                             _listGetMinSemaphoreWaitList(_semaphoreId_t id);
+_threadId_t                             _listGetMaxSemaphoreWaitList(_semaphoreId_t id);
+_listSize_t                             _listGetSizeSemaphoreWaitList(_semaphoreId_t id);
+_bool_t                                 _listIsEmptySemaphoreWaitList(_semaphoreId_t id);
+
+
+
 #endif /* RTOS_INCLUDE_LIST_H_ */

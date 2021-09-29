@@ -55,6 +55,12 @@ typedef _threadStackPointer_t               threadStackPointer_t;
 
 
 
+typedef _semaphoreId_t                      semaphoreId_t;
+typedef _semaphoreName_t                    semaphoreName_t;
+typedef _semaphoreCount_t                   semaphoreCount_t;
+
+
+
 
 
 status_t                                    rtosInitialize(void);
@@ -81,6 +87,16 @@ status_t                                    threadYield(void);
 status_t                                    threadSuspend(threadId_t id);
 status_t                                    threadResume(threadId_t id);
 status_t                                    threadWait(threadId_t id, kernelTick_t numberOfTicks);
+
+
+
+semaphoreName_t                             semaphoreGetName(semaphoreId_t id);
+semaphoreId_t                               semaphoreCreateNew(    semaphoreName_t name,
+                                                                   semaphoreCount_t maxCount,
+                                                                   semaphoreCount_t initialCount);
+status_t                                    semaphoreDelete(semaphoreId_t id);
+status_t                                    semaphoreGet(semaphoreId_t id, kernelTick_t timeOut);
+status_t                                    semaphoreRelease(semaphoreId_t id);
 
 
 

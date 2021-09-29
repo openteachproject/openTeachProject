@@ -142,6 +142,24 @@ _status_t _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg) {
 
 
 
+        case SemaphoreGetNameSystemCallNumber:
+            _semaphoreGetNameSystemCall(specificSystemCallArg);
+            break;
+        case SemaphoreCreateNewSystemCallNumber:
+            _semaphoreCreateNewSystemCall(specificSystemCallArg);
+            break;
+        case SemaphoreDeleteSystemCallNumber:
+            _semaphoreDeleteSystemCall(specificSystemCallArg);
+            break;
+        case SemaphoreGetSystemCallNumber:
+            _semaphoreGetSystemCall(specificSystemCallArg);
+            break;
+        case SemaphoreReleaseSystemCallNumber:
+            _semaphoreReleaseSystemCall(specificSystemCallArg);
+            break;
+
+
+
         default:
             break;
     }
@@ -228,6 +246,15 @@ _status_t _kernelWaitListHandler(void) {
             returnTick = thread -> returnTick;
 
             if (currentTick == returnTick) {
+
+                if (thread -> semaphoreWaitingFor != NULL) {
+                    _listDeleteFromSemaphoreWaitList(thread -> semaphoreWaitingFor, threadId);
+                    thread -> semaphoreWaitingFor = NULL;
+
+                }
+                else {
+                    //Thread has not waited for a resource
+                }
 
                 nextThreadId = _listGetNextWaitList(waitListNumber, threadId);
                 _listDeleteFromWaitList(threadId, waitListNumber);

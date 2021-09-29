@@ -385,3 +385,164 @@ _bool_t _listIsEmptyWaitList(_kernelWaitListNumber_t waitListNumber) {
     }
     return returnValue;
 }
+
+
+
+_semaphoreWaitNode_t* _listCreateNewSemaphoreWaitNode(_threadId_t id) {
+
+    _semaphoreWaitNode_t                 *newNode;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        newNode = NULL;
+    }
+    else {
+        thread = (_threadControlBlock_t*)id;
+        newNode = binaryTreeCreateNewNode(id, thread -> priority);
+    }
+    return newNode;
+}
+
+_semaphoreWaitList_t* _listCreateNewSemaphoreWaitList(void) {
+
+    _semaphoreWaitList_t        *newList;
+
+    newList = binaryTreeCreateNewTree();
+    return newList;
+}
+
+_status_t _listInsertToSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId) {
+
+    _status_t                            returnValue;
+    _semaphoreWaitList_t                 *list;
+    _semaphoreWaitNode_t                 *node;
+    _semaphoreControlBlock_t             *semaphore;
+    _threadControlBlock_t                *thread;
+
+    if (semaphoreId == NULL || threadId == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        semaphore = (_semaphoreControlBlock_t*)semaphoreId;
+        thread = (_threadControlBlock_t*)threadId;
+        list = semaphore -> semaphoreWaitList;
+        node = thread -> semaphoreWaitNode;
+        binaryTreeInsert(list, node);
+        returnValue = StatusOk;
+    }
+    return returnValue;
+}
+
+_status_t _listDeleteFromSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId) {
+
+    _status_t                            returnValue;
+    _semaphoreWaitList_t                 *list;
+    _semaphoreWaitNode_t                 *node;
+    _semaphoreControlBlock_t             *semaphore;
+    _threadControlBlock_t                *thread;
+
+    if (semaphoreId == NULL || threadId == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        semaphore = (_semaphoreControlBlock_t*)semaphoreId;
+        thread = (_threadControlBlock_t*)threadId;
+        list = semaphore -> semaphoreWaitList;
+        node = thread -> semaphoreWaitNode;
+        if (thread -> semaphoreWaitingFor == NULL) {
+            returnValue = StatusErrorList;
+        }
+        else {
+            binaryTreeDelete(list, node);
+            returnValue = StatusOk;
+        }
+    }
+    return returnValue;
+}
+
+_threadId_t _listGetMinSemaphoreWaitList(_semaphoreId_t id) {
+
+    _threadId_t                          minThreadId;
+    _semaphoreWaitList_t                 *list;
+    _semaphoreWaitNode_t                 *node;
+    _semaphoreControlBlock_t             *semaphore;
+
+    if (id == NULL) {
+        minThreadId = NULL;
+    }
+    else {
+        semaphore = (_semaphoreControlBlock_t*)id;
+        list = semaphore -> semaphoreWaitList;
+        if (binaryTreeGetSize(list) == 0) {
+            minThreadId = NULL;
+        }
+        else {
+            node = binaryTreeMinimum(list, list -> rootNode);
+            minThreadId = (_threadId_t)(node -> element);
+        }
+    }
+    return minThreadId;
+}
+
+_threadId_t _listGetMaxSemaphoreWaitList(_semaphoreId_t id) {
+
+    _threadId_t                          maxThreadId;
+    _semaphoreWaitList_t                 *list;
+    _semaphoreWaitNode_t                 *node;
+    _semaphoreControlBlock_t             *semaphore;
+
+    if (id == NULL) {
+        maxThreadId = NULL;
+    }
+    else {
+        semaphore = (_semaphoreControlBlock_t*)id;
+        list = semaphore -> semaphoreWaitList;
+        if (binaryTreeGetSize(list) == 0) {
+            maxThreadId = NULL;
+        }
+        else {
+            node = binaryTreeMaximum(list, list -> rootNode);
+            maxThreadId = (_threadId_t)(node -> element);
+        }
+    }
+    return maxThreadId;
+}
+
+_listSize_t _listGetSizeSemaphoreWaitList(_semaphoreId_t id) {
+
+    _listSize_t                          listSize;
+    _semaphoreWaitList_t                 *list;
+    _semaphoreControlBlock_t             *semaphore;
+
+    if (id == NULL) {
+        listSize = 0;
+    }
+    else {
+        semaphore = (_semaphoreControlBlock_t*)id;
+        list = semaphore -> semaphoreWaitList;
+        listSize = binaryTreeGetSize(list);
+    }
+    return listSize;
+}
+
+_bool_t _listIsEmptySemaphoreWaitList(_semaphoreId_t id) {
+
+    _bool_t                              returnValue;
+    _semaphoreWaitList_t                 *list;
+    _semaphoreControlBlock_t             *semaphore;
+
+    if (id == NULL) {
+        returnValue = false;
+    }
+    else {
+        semaphore = (_semaphoreControlBlock_t*)id;
+        list = semaphore -> semaphoreWaitList;
+        if (binaryTreeGetSize(list) == 0) {
+            returnValue = true;
+        }
+        else {
+            returnValue = false;
+        }
+    }
+    return returnValue;
+}

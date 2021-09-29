@@ -59,6 +59,8 @@
 #define ThreadDefaultStackSize              1024
 #define ThreadMaximumStackSize              32 * 1024
 
+#define SemaphoreNameMaxLength              32
+
 
 
 
@@ -135,6 +137,15 @@ enum _threadState
 
 
 
+enum _returnedByRelease
+{
+    ReturnedByReleaseUnset                  = 0,
+    ReturnedByReleaseSet                    = 1,
+    ReturnedByReleaseError                  = 0xFFFFFFFF
+};
+
+
+
 
 typedef struct _kernelControlBlock          _kernelControlBlock_t;
 typedef void*                               _kernelId_t;
@@ -158,6 +169,7 @@ typedef uint32_t                            _listKey_t;
 typedef uint32_t                            _atomicValue_t;
 typedef uint32_t*                           _atomicAddress_t;
 typedef enum _atomicResult                  _atomicResult_t;
+typedef enum _returnedByRelease             _returnedByRelease_t;
 
 
 
@@ -170,6 +182,15 @@ typedef void                                (*_threadFunctionPointer_t)(_threadF
 typedef enum _threadPriority                _threadPriority_t;
 typedef uint32_t                            _threadStackSize_t;
 typedef uint8_t*                            _threadStackPointer_t;
+
+
+
+typedef struct _semaphoreControlBlock       _semaphoreControlBlock_t;
+typedef void*                               _semaphoreId_t;
+typedef char*                               _semaphoreName_t;
+typedef uint32_t                            _semaphoreCount_t;
+typedef binaryTree_t                        _semaphoreWaitList_t;
+typedef binaryTreeNode_t                    _semaphoreWaitNode_t;
 
 
 
@@ -215,6 +236,20 @@ struct _threadControlBlock {
     _kernelReadyNode_t                      *readyNode;
     _kernelWaitNode_t                       *waitNode;
     _kernelTick_t                           returnTick;
+    _semaphoreWaitNode_t                    *semaphoreWaitNode;
+    _semaphoreId_t                          semaphoreWaitingFor;
+    _returnedByRelease_t                    returnedByRelease;
+};
+
+
+
+struct _semaphoreControlBlock {
+    _semaphoreId_t                          id;
+    _semaphoreName_t                        name;
+    _semaphoreCount_t                       count;
+    _semaphoreCount_t                       maxCount;
+    _semaphoreCount_t                       initialCount;
+    _semaphoreWaitList_t                    *semaphoreWaitList;
 };
 
 

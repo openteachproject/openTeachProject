@@ -52,6 +52,15 @@
 
 
 
+#define SemaphoreSystemCallNumberBase                 256
+#define SemaphoreGetNameSystemCallNumber              SemaphoreSystemCallNumberBase + 0
+#define SemaphoreCreateNewSystemCallNumber            SemaphoreSystemCallNumberBase + 1
+#define SemaphoreDeleteSystemCallNumber               SemaphoreSystemCallNumberBase + 2
+#define SemaphoreGetSystemCallNumber                  SemaphoreSystemCallNumberBase + 3
+#define SemaphoreReleaseSystemCallNumber              SemaphoreSystemCallNumberBase + 4
+
+
+
 typedef struct _threadGetIdArg                        _threadGetIdArg_t;
 typedef struct _threadGetNameArg                      _threadGetNameArg_t;
 typedef struct _threadGetStateArg                     _threadGetStateArg_t;
@@ -64,6 +73,14 @@ typedef struct _threadYieldArg                        _threadYieldArg_t;
 typedef struct _threadSuspendArg                      _threadSuspendArg_t;
 typedef struct _threadResumeArg                       _threadResumeArg_t;
 typedef struct _threadWaitArg                         _threadWaitArg_t;
+
+
+
+typedef struct _semaphoreGetNameArg                   _semaphoreGetNameArg_t;
+typedef struct _semaphoreCreateNewArg                 _semaphoreCreateNewArg_t;
+typedef struct _semaphoreDeleteArg                    _semaphoreDeleteArg_t;
+typedef struct _semaphoreGetArg                       _semaphoreGetArg_t;
+typedef struct _semaphoreReleaseArg                   _semaphoreReleaseArg_t;
 
 
 
@@ -120,6 +137,33 @@ struct _threadWaitArg {
 
 
 
+struct _semaphoreGetNameArg {
+    _semaphoreId_t                                    semaphoreIdArg;
+    _semaphoreName_t                                  returnValue;
+};
+struct _semaphoreCreateNewArg {
+    _semaphoreName_t                                  semaphoreNameArg;
+    _semaphoreCount_t                                 semaphoreMaxCountArg;
+    _semaphoreCount_t                                 semaphoreInitialCountArg;
+    _semaphoreId_t                                    returnValue;
+};
+struct _semaphoreDeleteArg {
+    _semaphoreId_t                                    semaphoreIdArg;
+    _status_t                                         returnValue;
+};
+struct _semaphoreGetArg {
+    _semaphoreId_t                                    semaphoreIdArg;
+    _kernelTick_t                                     timeOutArg;
+    _threadId_t                                       semaphoreCallerId;
+    _status_t                                         returnValue;
+};
+struct _semaphoreReleaseArg {
+    _semaphoreId_t                                    semaphoreIdArg;
+    _status_t                                         returnValue;
+};
+
+
+
 void _threadGetNameSystemCall(_threadGetNameArg_t *arg);
 void _threadGetStateSystemCall(_threadGetStateArg_t *arg);
 void _threadGetPrioritySystemCall(_threadGetPriorityArg_t *arg);
@@ -131,6 +175,14 @@ void _threadYieldSystemCall(_threadYieldArg_t *arg);
 void _threadSuspendSystemCall(_threadSuspendArg_t *arg);
 void _threadResumeSystemCall(_threadResumeArg_t *arg);
 void _threadWaitSystemCall(_threadWaitArg_t *arg);
+
+
+
+void _semaphoreGetNameSystemCall(_semaphoreGetNameArg_t *arg);
+void _semaphoreCreateNewSystemCall(_semaphoreCreateNewArg_t *arg);
+void _semaphoreDeleteSystemCall(_semaphoreDeleteArg_t *arg);
+void _semaphoreGetSystemCall(_semaphoreGetArg_t *arg);
+void _semaphoreReleaseSystemCall(_semaphoreReleaseArg_t *arg);
 
 
 
