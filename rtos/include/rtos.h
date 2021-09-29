@@ -61,6 +61,13 @@ typedef _semaphoreCount_t                   semaphoreCount_t;
 
 
 
+typedef _mutexId_t                          mutexId_t;
+typedef _mutexName_t                        mutexName_t;
+typedef _mutexLock_t                        mutexLock_t;
+typedef _mutexType_t                        mutexType_t;
+
+
+
 
 
 status_t                                    rtosInitialize(void);
@@ -97,6 +104,14 @@ semaphoreId_t                               semaphoreCreateNew(    semaphoreName
 status_t                                    semaphoreDelete(semaphoreId_t id);
 status_t                                    semaphoreGet(semaphoreId_t id, kernelTick_t timeOut);
 status_t                                    semaphoreRelease(semaphoreId_t id);
+
+
+
+mutexName_t                                 mutexGetName(mutexId_t id);
+mutexId_t                                   mutexCreateNew(mutexName_t name, mutexType_t type);
+status_t                                    mutexDelete(mutexId_t id);
+status_t                                    mutexGet(mutexId_t id, kernelTick_t timeOut);
+status_t                                    mutexRelease(mutexId_t id);
 
 
 

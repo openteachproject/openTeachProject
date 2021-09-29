@@ -71,4 +71,26 @@ _bool_t                                 _listIsEmptySemaphoreWaitList(_semaphore
 
 
 
+_mutexWaitNode_t                       *_listCreateNewMutexWaitNode(_threadId_t id);
+_mutexWaitList_t                       *_listCreateNewMutexWaitList(void);
+_status_t                               _listInsertToMutexWaitList(_mutexId_t mutexId, _threadId_t threadId);
+_status_t                               _listDeleteFromMutexWaitList(_mutexId_t mutexId, _threadId_t threadId);
+_threadId_t                             _listGetMinMutexWaitList(_mutexId_t id);
+_threadId_t                             _listGetMaxMutexWaitList(_mutexId_t id);
+_listSize_t                             _listGetSizeMutexWaitList(_mutexId_t id);
+_bool_t                                 _listIsEmptyMutexWaitList(_mutexId_t id);
+
+
+
+_threadOwnedMutexNode_t                *_listCreateNewThreadOwnedMutexNode(_mutexId_t id);
+_threadOwnedMutexList_t                *_listCreateNewThreadOwnedMutexList(void);
+_status_t                               _listInsertToThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId);
+_status_t                               _listDeleteFromThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId);
+_mutexId_t                              _listGetFirstThreadOwnedMutexList(_threadId_t id);
+_mutexId_t                              _listGetNextThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId);
+_listSize_t                             _listGetSizeThreadOwnedMutexList(_threadId_t id);
+_bool_t                                 _listIsEmptyThreadOwnedMutexList(_threadId_t id);
+
+
+
 #endif /* RTOS_INCLUDE_LIST_H_ */

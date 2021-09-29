@@ -313,6 +313,8 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
     _kernelReadyNode_t                    *threadReadyNode;
     _kernelWaitNode_t                     *threadWaitNode;
     _semaphoreWaitNode_t                  *semaphoreWaitNode;
+    _mutexWaitNode_t                      *mutexWaitNode;
+    _threadOwnedMutexList_t               *threadOwnedMutexList;
 
     while(true) {
         newThread = (_threadControlBlock_t*)malloc(sizeof(_threadControlBlock_t));
@@ -403,6 +405,26 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
         }
 
         newThread -> semaphoreWaitingFor = NULL;
+
+        mutexWaitNode = _listCreateNewMutexWaitNode(threadId);
+        if (mutexWaitNode == NULL) {
+            returnValue = NULL;
+            break;
+        }
+        else {
+            newThread -> mutexWaitNode = mutexWaitNode;
+        }
+
+        newThread -> mutexWaitingFor = NULL;
+
+        threadOwnedMutexList = _listCreateNewThreadOwnedMutexList();
+        if (threadOwnedMutexList == NULL) {
+            returnValue = NULL;
+            break;
+        }
+        else {
+            newThread -> threadOwnedMutexList = threadOwnedMutexList;
+        }
 
         newThread -> returnedByRelease = ReturnedByReleaseUnset;
 

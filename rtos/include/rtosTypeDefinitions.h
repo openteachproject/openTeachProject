@@ -61,6 +61,8 @@
 
 #define SemaphoreNameMaxLength              32
 
+#define MutexNameMaxLength                  32
+
 
 
 
@@ -144,6 +146,26 @@ enum _returnedByRelease
     ReturnedByReleaseError                  = 0xFFFFFFFF
 };
 
+enum _mutexLock
+{
+    MutexUnlocked                           = 0,
+    MutexLocked                             = 1,
+    MutexLockError                          = 0xFFFFFFFF
+};
+
+enum _mutexType
+{
+    MutexTypeSingleshot                     = 0,
+    MutexTypeRecursive                      = 1,
+    MutexTypeError                          = 0xFFFFFFFF
+};
+
+enum _resourceState
+{
+    ResourceStateActive                     = 0,
+    ResourceStateDeleted                    = 1,
+    ResourceStateError                      = 0xFFFFFFFF
+};
 
 
 
@@ -170,6 +192,7 @@ typedef uint32_t                            _atomicValue_t;
 typedef uint32_t*                           _atomicAddress_t;
 typedef enum _atomicResult                  _atomicResult_t;
 typedef enum _returnedByRelease             _returnedByRelease_t;
+typedef enum _resourceState                 _resourceState_t;
 
 
 
@@ -182,6 +205,8 @@ typedef void                                (*_threadFunctionPointer_t)(_threadF
 typedef enum _threadPriority                _threadPriority_t;
 typedef uint32_t                            _threadStackSize_t;
 typedef uint8_t*                            _threadStackPointer_t;
+typedef queue_t                             _threadOwnedMutexList_t;
+typedef queueNode_t                         _threadOwnedMutexNode_t;
 
 
 
@@ -191,6 +216,16 @@ typedef char*                               _semaphoreName_t;
 typedef uint32_t                            _semaphoreCount_t;
 typedef binaryTree_t                        _semaphoreWaitList_t;
 typedef binaryTreeNode_t                    _semaphoreWaitNode_t;
+
+
+
+typedef struct _mutexControlBlock           _mutexControlBlock_t;
+typedef void*                               _mutexId_t;
+typedef char*                               _mutexName_t;
+typedef enum _mutexLock                     _mutexLock_t;
+typedef enum _mutexType                     _mutexType_t;
+typedef binaryTree_t                        _mutexWaitList_t;
+typedef binaryTreeNode_t                    _mutexWaitNode_t;
 
 
 
@@ -238,6 +273,9 @@ struct _threadControlBlock {
     _kernelTick_t                           returnTick;
     _semaphoreWaitNode_t                    *semaphoreWaitNode;
     _semaphoreId_t                          semaphoreWaitingFor;
+    _mutexWaitNode_t                        *mutexWaitNode;
+    _mutexId_t                              mutexWaitingFor;
+    _threadOwnedMutexList_t                 *threadOwnedMutexList;
     _returnedByRelease_t                    returnedByRelease;
 };
 
@@ -251,6 +289,20 @@ struct _semaphoreControlBlock {
     _semaphoreCount_t                       initialCount;
     _semaphoreWaitList_t                    *semaphoreWaitList;
 };
+
+
+
+struct _mutexControlBlock {
+    _mutexId_t                              id;
+    _mutexName_t                            name;
+    _mutexLock_t                            lock;
+    _mutexType_t                            type;
+    _threadId_t                             owner;
+    _threadOwnedMutexNode_t                 *threadOwnedMutexNode;
+    _mutexWaitList_t                        *mutexWaitList;
+    _resourceState_t                        resourceState;
+};
+
 
 
 

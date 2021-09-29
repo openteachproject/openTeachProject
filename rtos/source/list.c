@@ -546,3 +546,332 @@ _bool_t _listIsEmptySemaphoreWaitList(_semaphoreId_t id) {
     }
     return returnValue;
 }
+
+
+
+_mutexWaitNode_t* _listCreateNewMutexWaitNode(_threadId_t id) {
+
+    _mutexWaitNode_t                     *newNode;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        newNode = NULL;
+    }
+    else {
+        thread = (_threadControlBlock_t*)id;
+        newNode = binaryTreeCreateNewNode(id, thread -> priority);
+    }
+    return newNode;
+}
+
+_mutexWaitList_t* _listCreateNewMutexWaitList(void) {
+
+    _mutexWaitList_t                     *newList;
+
+    newList = binaryTreeCreateNewTree();
+    return newList;
+}
+
+_status_t _listInsertToMutexWaitList(_mutexId_t mutexId, _threadId_t threadId) {
+
+    _status_t                            returnValue;
+    _mutexWaitList_t                     *list;
+    _mutexWaitNode_t                     *node;
+    _mutexControlBlock_t                 *mutex;
+    _threadControlBlock_t                *thread;
+
+    if (mutexId == NULL || threadId == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        mutex = (_mutexControlBlock_t*)mutexId;
+        thread = (_threadControlBlock_t*)threadId;
+        list = mutex -> mutexWaitList;
+        node = thread -> mutexWaitNode;
+        binaryTreeInsert(list, node);
+        returnValue = StatusOk;
+    }
+    return returnValue;
+}
+
+_status_t _listDeleteFromMutexWaitList(_mutexId_t mutexId, _threadId_t threadId) {
+
+    _status_t                            returnValue;
+    _mutexWaitList_t                     *list;
+    _mutexWaitNode_t                     *node;
+    _mutexControlBlock_t                 *mutex;
+    _threadControlBlock_t                *thread;
+
+    if (mutexId == NULL || threadId == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        mutex = (_mutexControlBlock_t*)mutexId;
+        thread = (_threadControlBlock_t*)threadId;
+        list = mutex -> mutexWaitList;
+        node = thread -> mutexWaitNode;
+        if (thread -> mutexWaitingFor == NULL) {
+            returnValue = StatusErrorList;
+        }
+        else {
+            binaryTreeDelete(list, node);
+            returnValue = StatusOk;
+        }
+    }
+    return returnValue;
+}
+
+_threadId_t _listGetMinMutexWaitList(_mutexId_t id) {
+
+    _threadId_t                          minThreadId;
+    _mutexWaitList_t                     *list;
+    _mutexWaitNode_t                     *node;
+    _mutexControlBlock_t                 *mutex;
+
+    if (id == NULL) {
+        minThreadId = NULL;
+    }
+    else {
+        mutex = (_mutexControlBlock_t*)id;
+        list = mutex -> mutexWaitList;
+        if (binaryTreeGetSize(list) == 0) {
+            minThreadId = NULL;
+        }
+        else {
+            node = binaryTreeMinimum(list, list -> rootNode);
+            minThreadId = (_threadId_t)(node -> element);
+        }
+    }
+    return minThreadId;
+}
+
+_threadId_t _listGetMaxMutexWaitList(_mutexId_t id) {
+
+    _threadId_t                          maxThreadId;
+    _mutexWaitList_t                     *list;
+    _mutexWaitNode_t                     *node;
+    _mutexControlBlock_t                 *mutex;
+
+    if (id == NULL) {
+        maxThreadId = NULL;
+    }
+    else {
+        mutex = (_mutexControlBlock_t*)id;
+        list = mutex -> mutexWaitList;
+        if (binaryTreeGetSize(list) == 0) {
+            maxThreadId = NULL;
+        }
+        else {
+            node = binaryTreeMaximum(list, list -> rootNode);
+            maxThreadId = (_threadId_t)(node -> element);
+        }
+    }
+    return maxThreadId;
+}
+
+_listSize_t _listGetSizeMutexWaitList(_mutexId_t id) {
+
+    _listSize_t                          listSize;
+    _mutexWaitList_t                     *list;
+    _mutexControlBlock_t                 *mutex;
+
+    if (id == NULL) {
+        listSize = 0;
+    }
+    else {
+        mutex = (_mutexControlBlock_t*)id;
+        list = mutex -> mutexWaitList;
+        listSize = binaryTreeGetSize(list);
+    }
+    return listSize;
+}
+
+_bool_t _listIsEmptyMutexWaitList(_mutexId_t id) {
+
+    _bool_t                              returnValue;
+    _mutexWaitList_t                     *list;
+    _mutexControlBlock_t                 *mutex;
+
+    if (id == NULL) {
+        returnValue = false;
+    }
+    else {
+        mutex = (_mutexControlBlock_t*)id;
+        list = mutex -> mutexWaitList;
+        if (binaryTreeGetSize(list) == 0) {
+            returnValue = true;
+        }
+        else {
+            returnValue = false;
+        }
+    }
+    return returnValue;
+}
+
+
+
+_threadOwnedMutexNode_t* _listCreateNewThreadOwnedMutexNode(_mutexId_t id) {
+
+    _threadOwnedMutexNode_t              *newNode;
+
+    if (id == NULL) {
+        newNode = NULL;
+    }
+    else {
+        newNode = QueueCreateNewNode(id, 0);
+    }
+    return newNode;
+}
+
+_threadOwnedMutexList_t* _listCreateNewThreadOwnedMutexList(void) {
+
+    _threadOwnedMutexList_t              *newList;
+
+    newList = QueueCreateNewQueue();
+    return newList;
+}
+
+_status_t _listInsertToThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId) {
+
+    _status_t                            returnValue;
+    _threadOwnedMutexList_t              *list;
+    _threadOwnedMutexNode_t              *node;
+    _threadControlBlock_t                *thread;
+    _mutexControlBlock_t                 *mutex;
+
+    if (threadId == NULL || mutexId == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        thread = (_threadControlBlock_t*)threadId;
+        mutex = (_mutexControlBlock_t*)mutexId;
+        list = thread -> threadOwnedMutexList;
+        node = mutex -> threadOwnedMutexNode;
+        QueueEnqueue(list, node);
+        returnValue = StatusOk;
+    }
+    return returnValue;
+}
+
+_status_t _listDeleteFromThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId) {
+
+    _status_t                            returnValue;
+    _threadOwnedMutexList_t              *list;
+    _threadOwnedMutexNode_t              *node;
+    _threadControlBlock_t                *thread;
+    _mutexControlBlock_t                 *mutex;
+
+    if (threadId == NULL || mutexId == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        thread = (_threadControlBlock_t*)threadId;
+        mutex = (_mutexControlBlock_t*)mutexId;
+        list = thread -> threadOwnedMutexList;
+        node = mutex -> threadOwnedMutexNode;
+        if (mutex -> owner == threadId) {
+            QueueDeleteNode(list, node);
+            returnValue = StatusOk;
+        }
+        else {
+            returnValue = StatusErrorList;
+        }
+    }
+    return returnValue;
+}
+
+_mutexId_t _listGetFirstThreadOwnedMutexList(_threadId_t id) {
+
+    _mutexId_t                           firstMutexId;
+    _threadOwnedMutexList_t              *list;
+    _threadOwnedMutexNode_t              *node;
+    _threadControlBlock_t                *thread;
+
+    if ( id == NULL) {
+        firstMutexId = NULL;
+    }
+    else {
+        thread = (_threadControlBlock_t*)id;
+        list = thread -> threadOwnedMutexList;
+        if (QueueGetSize(list) == 0) {
+            firstMutexId = NULL;
+        }
+        else {
+            node = QueueHead(list);
+            firstMutexId = (_mutexId_t)(node -> element);
+        }
+    }
+    return firstMutexId;
+}
+
+_mutexId_t _listGetNextThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId) {
+
+    _mutexId_t                           nextMutexId;
+    _threadOwnedMutexList_t              *list;
+    _threadOwnedMutexNode_t              *node;
+    _threadOwnedMutexNode_t              *nextNode;
+    _threadControlBlock_t                *thread;
+    _mutexControlBlock_t                 *mutex;
+
+    if (threadId == NULL || mutexId == NULL) {
+        nextMutexId = NULL;
+    }
+    else {
+        thread = (_threadControlBlock_t*)threadId;
+        mutex = (_mutexControlBlock_t*)mutexId;
+        list = thread -> threadOwnedMutexList;
+        node = mutex -> threadOwnedMutexNode;
+        if (mutex -> owner == threadId) {
+            if (QueueGetSize(list) == 1) {
+                nextNode = node;
+            }
+            else {
+                nextNode = QueueGetNextNode(node);
+            }
+            nextMutexId = (_mutexId_t)(nextNode -> element);
+        }
+        else {
+            mutexId = NULL;
+        }
+    }
+    return nextMutexId;
+}
+
+_listSize_t _listGetSizeThreadOwnedMutexList(_threadId_t id) {
+
+    _listSize_t                          listSize;
+    _threadOwnedMutexList_t              *list;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        listSize = 0;
+    }
+    else {
+        thread = (_threadId_t)id;
+        list = thread -> threadOwnedMutexList;
+        listSize = QueueGetSize(list);
+    }
+    return listSize;
+}
+
+_bool_t _listIsEmptyThreadOwnedMutexList(_threadId_t id) {
+
+    _bool_t                              returnValue;
+    _threadOwnedMutexList_t              *list;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        returnValue = false;
+    }
+    else {
+        thread = (_threadId_t)id;
+        list = thread -> threadOwnedMutexList;
+        if (QueueGetSize(list) == 0) {
+            returnValue = true;
+        }
+        else {
+            returnValue = false;
+        }
+    }
+    return returnValue;
+}

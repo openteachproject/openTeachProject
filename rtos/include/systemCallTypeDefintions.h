@@ -61,6 +61,15 @@
 
 
 
+#define MutexSystemCallNumberBase                     512
+#define MutexGetNameSystemCallNumber                  MutexSystemCallNumberBase + 0
+#define MutexCreateNewSystemCallNumber                MutexSystemCallNumberBase + 1
+#define MutexDeleteSystemCallNumber                   MutexSystemCallNumberBase + 2
+#define MutexGetSystemCallNumber                      MutexSystemCallNumberBase + 3
+#define MutexReleaseSystemCallNumber                  MutexSystemCallNumberBase + 4
+
+
+
 typedef struct _threadGetIdArg                        _threadGetIdArg_t;
 typedef struct _threadGetNameArg                      _threadGetNameArg_t;
 typedef struct _threadGetStateArg                     _threadGetStateArg_t;
@@ -81,6 +90,14 @@ typedef struct _semaphoreCreateNewArg                 _semaphoreCreateNewArg_t;
 typedef struct _semaphoreDeleteArg                    _semaphoreDeleteArg_t;
 typedef struct _semaphoreGetArg                       _semaphoreGetArg_t;
 typedef struct _semaphoreReleaseArg                   _semaphoreReleaseArg_t;
+
+
+
+typedef struct _mutexGetNameArg                       _mutexGetNameArg_t;
+typedef struct _mutexCreateNewArg                     _mutexCreateNewArg_t;
+typedef struct _mutexDeleteArg                        _mutexDeleteArg_t;
+typedef struct _mutexGetArg                           _mutexGetArg_t;
+typedef struct _mutexReleaseArg                       _mutexReleaseArg_t;
 
 
 
@@ -154,11 +171,38 @@ struct _semaphoreDeleteArg {
 struct _semaphoreGetArg {
     _semaphoreId_t                                    semaphoreIdArg;
     _kernelTick_t                                     timeOutArg;
-    _threadId_t                                       semaphoreCallerId;
+    _threadId_t                                       semaphoreCallerIdArg;
     _status_t                                         returnValue;
 };
 struct _semaphoreReleaseArg {
     _semaphoreId_t                                    semaphoreIdArg;
+    _status_t                                         returnValue;
+};
+
+
+
+struct _mutexGetNameArg {
+    _mutexId_t                                        mutexIdArg;
+    _mutexName_t                                      returnValue;
+};
+struct _mutexCreateNewArg {
+    _mutexName_t                                      mutexNameArg;
+    _mutexType_t                                      mutexTypeArg;
+    _mutexId_t                                        returnValue;
+};
+struct _mutexDeleteArg {
+    _mutexId_t                                        mutexIdArg;
+    _status_t                                         returnValue;
+};
+struct _mutexGetArg {
+    _mutexId_t                                        mutexIdArg;
+    _kernelTick_t                                     timeOutArg;
+    _threadId_t                                       mutexCallerIdArg;
+    _status_t                                         returnValue;
+};
+struct _mutexReleaseArg {
+    _mutexId_t                                        mutexIdArg;
+    _threadId_t                                       mutexCallerIdArg;
     _status_t                                         returnValue;
 };
 
@@ -183,6 +227,14 @@ void _semaphoreCreateNewSystemCall(_semaphoreCreateNewArg_t *arg);
 void _semaphoreDeleteSystemCall(_semaphoreDeleteArg_t *arg);
 void _semaphoreGetSystemCall(_semaphoreGetArg_t *arg);
 void _semaphoreReleaseSystemCall(_semaphoreReleaseArg_t *arg);
+
+
+
+void _mutexGetNameSystemCall(_mutexGetNameArg_t *arg);
+void _mutexCreateNewSystemCall(_mutexCreateNewArg_t *arg);
+void _mutexDeleteSystemCall(_mutexDeleteArg_t *arg);
+void _mutexGetSystemCall(_mutexGetArg_t *arg);
+void _mutexReleaseSystemCall(_mutexReleaseArg_t *arg);
 
 
 

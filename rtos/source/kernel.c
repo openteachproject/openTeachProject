@@ -160,6 +160,24 @@ _status_t _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg) {
 
 
 
+        case MutexGetNameSystemCallNumber:
+            _mutexGetNameSystemCall(specificSystemCallArg);
+            break;
+        case MutexCreateNewSystemCallNumber:
+            _mutexCreateNewSystemCall(specificSystemCallArg);
+            break;
+        case MutexDeleteSystemCallNumber:
+            _mutexDeleteSystemCall(specificSystemCallArg);
+            break;
+        case MutexGetSystemCallNumber:
+            _mutexGetSystemCall(specificSystemCallArg);
+            break;
+        case MutexReleaseSystemCallNumber:
+            _mutexReleaseSystemCall(specificSystemCallArg);
+            break;
+
+
+
         default:
             break;
     }
@@ -251,6 +269,10 @@ _status_t _kernelWaitListHandler(void) {
                     _listDeleteFromSemaphoreWaitList(thread -> semaphoreWaitingFor, threadId);
                     thread -> semaphoreWaitingFor = NULL;
 
+                }
+                else if (thread -> mutexWaitingFor != NULL) {
+                    _listDeleteFromMutexWaitList(thread -> mutexWaitingFor, threadId);
+                    thread -> mutexWaitingFor = NULL;
                 }
                 else {
                     //Thread has not waited for a resource

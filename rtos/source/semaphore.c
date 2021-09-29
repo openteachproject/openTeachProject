@@ -303,7 +303,7 @@ status_t semaphoreGet(semaphoreId_t id, kernelTick_t timeOut) {
 
             semaphoreGetArg . semaphoreIdArg = id;
             semaphoreGetArg . timeOutArg = timeOut;
-            semaphoreGetArg . semaphoreCallerId = semaphoreCallerId;
+            semaphoreGetArg . semaphoreCallerIdArg = semaphoreCallerId;
 
             systemCallArg . systemCallNumber = SemaphoreGetSystemCallNumber;
             systemCallArg . specificSystemCallArg = &semaphoreGetArg;
@@ -352,7 +352,7 @@ void _semaphoreGetSystemCall(_semaphoreGetArg_t *arg) {
     semaphore = (_semaphoreControlBlock_t*)semaphoreId;
     semaphoreCount = semaphore -> count;
     timeOut = arg -> timeOutArg;
-    semaphoreCallerId = arg -> semaphoreCallerId;
+    semaphoreCallerId = arg -> semaphoreCallerIdArg;
     semaphoreCaller = (_threadControlBlock_t*)semaphoreCallerId;
 
     if (semaphoreCount > 0) {
