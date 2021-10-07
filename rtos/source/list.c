@@ -53,9 +53,9 @@ _kernelReadyList_t* _listCreateNewReadyList(void) {
     return newList;
 }
 
-_status_t _listInsertToReadyList(_threadId_t id) {
+_rtosStatus_t _listInsertToReadyList(_threadId_t id) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelReadyList_t                  *list;
     _kernelReadyNode_t                  *node;
     _kernelControlBlock_t               *kernel;
@@ -75,9 +75,9 @@ _status_t _listInsertToReadyList(_threadId_t id) {
     return returnValue;
 }
 
-_status_t _listDeleteFromReadyList(_threadId_t id) {
+_rtosStatus_t _listDeleteFromReadyList(_threadId_t id) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelReadyList_t                  *list;
     _kernelReadyNode_t                  *node;
     _kernelControlBlock_t               *kernel;
@@ -150,9 +150,9 @@ _threadId_t _listGetNextReadyList(_threadId_t id) {
     return nextThreadId;
 }
 
-_status_t _listPushIndexReadyList(_threadPriority_t priority) {
+_rtosStatus_t _listPushIndexReadyList(_threadPriority_t priority) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelReadyList_t                  *list;
     _kernelControlBlock_t               *kernel;
 
@@ -230,9 +230,9 @@ _kernelWaitList_t* _listCreateNewWaitList(void) {
     return newList;
 }
 
-_status_t _listInsertToWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber) {
+_rtosStatus_t _listInsertToWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _kernelWaitList_t                    *list;
     _kernelWaitNode_t                    *node;
     _kernelControlBlock_t                *kernel;
@@ -252,9 +252,9 @@ _status_t _listInsertToWaitList(_threadId_t id, _kernelWaitListNumber_t waitList
     return returnValue;
 }
 
-_status_t _listDeleteFromWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber) {
+_rtosStatus_t _listDeleteFromWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _kernelWaitList_t                    *list;
     _kernelWaitNode_t                    *node;
     _kernelControlBlock_t                *kernel;
@@ -411,9 +411,9 @@ _semaphoreWaitList_t* _listCreateNewSemaphoreWaitList(void) {
     return newList;
 }
 
-_status_t _listInsertToSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId) {
+_rtosStatus_t _listInsertToSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _semaphoreWaitList_t                 *list;
     _semaphoreWaitNode_t                 *node;
     _semaphoreControlBlock_t             *semaphore;
@@ -433,9 +433,9 @@ _status_t _listInsertToSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t
     return returnValue;
 }
 
-_status_t _listDeleteFromSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId) {
+_rtosStatus_t _listDeleteFromSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _semaphoreWaitList_t                 *list;
     _semaphoreWaitNode_t                 *node;
     _semaphoreControlBlock_t             *semaphore;
@@ -572,9 +572,9 @@ _mutexWaitList_t* _listCreateNewMutexWaitList(void) {
     return newList;
 }
 
-_status_t _listInsertToMutexWaitList(_mutexId_t mutexId, _threadId_t threadId) {
+_rtosStatus_t _listInsertToMutexWaitList(_mutexId_t mutexId, _threadId_t threadId) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _mutexWaitList_t                     *list;
     _mutexWaitNode_t                     *node;
     _mutexControlBlock_t                 *mutex;
@@ -594,9 +594,9 @@ _status_t _listInsertToMutexWaitList(_mutexId_t mutexId, _threadId_t threadId) {
     return returnValue;
 }
 
-_status_t _listDeleteFromMutexWaitList(_mutexId_t mutexId, _threadId_t threadId) {
+_rtosStatus_t _listDeleteFromMutexWaitList(_mutexId_t mutexId, _threadId_t threadId) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _mutexWaitList_t                     *list;
     _mutexWaitNode_t                     *node;
     _mutexControlBlock_t                 *mutex;
@@ -731,9 +731,9 @@ _threadOwnedMutexList_t* _listCreateNewThreadOwnedMutexList(void) {
     return newList;
 }
 
-_status_t _listInsertToThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId) {
+_rtosStatus_t _listInsertToThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _threadOwnedMutexList_t              *list;
     _threadOwnedMutexNode_t              *node;
     _threadControlBlock_t                *thread;
@@ -753,9 +753,9 @@ _status_t _listInsertToThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mut
     return returnValue;
 }
 
-_status_t _listDeleteFromThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId) {
+_rtosStatus_t _listDeleteFromThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _threadOwnedMutexList_t              *list;
     _threadOwnedMutexNode_t              *node;
     _threadControlBlock_t                *thread;
@@ -897,9 +897,9 @@ _kernelSuspendedList_t* _listCreateNewSuspendedList(void) {
     return newList;
 }
 
-_status_t _listInsertToSuspendedList(_threadId_t id) {
+_rtosStatus_t _listInsertToSuspendedList(_threadId_t id) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _kernelSuspendedList_t               *list;
     _kernelSuspendedNode_t               *node;
     _kernelControlBlock_t                *kernel;
@@ -919,9 +919,9 @@ _status_t _listInsertToSuspendedList(_threadId_t id) {
     return returnValue;
 }
 
-_status_t _listDeleteFromSuspendedList(_threadId_t id) {
+_rtosStatus_t _listDeleteFromSuspendedList(_threadId_t id) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _kernelSuspendedList_t               *list;
     _kernelSuspendedNode_t               *node;
     _kernelControlBlock_t                *kernel;
@@ -1048,9 +1048,9 @@ _kernelTerminatedList_t* _listCreateNewTerminatedList(void) {
     return newList;
 }
 
-_status_t _listInsertToTerminatedList(_threadId_t id) {
+_rtosStatus_t _listInsertToTerminatedList(_threadId_t id) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _kernelTerminatedList_t              *list;
     _kernelTerminatedNode_t              *node;
     _kernelControlBlock_t                *kernel;
@@ -1070,9 +1070,9 @@ _status_t _listInsertToTerminatedList(_threadId_t id) {
     return returnValue;
 }
 
-_status_t _listDeleteFromTerminatedList(_threadId_t id) {
+_rtosStatus_t _listDeleteFromTerminatedList(_threadId_t id) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _kernelTerminatedList_t              *list;
     _kernelTerminatedNode_t              *node;
     _kernelControlBlock_t                *kernel;

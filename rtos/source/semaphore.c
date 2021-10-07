@@ -195,9 +195,9 @@ void _semaphoreCreateNewSystemCall(_semaphoreCreateNewArg_t *arg) {
 
 
 
-status_t semaphoreDelete(semaphoreId_t id) {
+rtosStatus_t semaphoreDelete(semaphoreId_t id) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _semaphoreDeleteArg_t               semaphoreDeleteArg;
 
@@ -230,7 +230,7 @@ status_t semaphoreDelete(semaphoreId_t id) {
 
 void _semaphoreDeleteSystemCall(_semaphoreDeleteArg_t *arg) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _semaphoreControlBlock_t            *semaphore;
     _semaphoreId_t                      semaphoreId;
     _listSize_t                         listSize;
@@ -279,9 +279,9 @@ void _semaphoreDeleteSystemCall(_semaphoreDeleteArg_t *arg) {
 
 
 
-status_t semaphoreGet(semaphoreId_t id, kernelTick_t timeOut) {
+rtosStatus_t semaphoreGet(semaphoreId_t id, kernelTick_t timeOut) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _semaphoreGetArg_t                  semaphoreGetArg;
     _threadControlBlock_t               *semaphoreCaller;
@@ -337,7 +337,7 @@ status_t semaphoreGet(semaphoreId_t id, kernelTick_t timeOut) {
 
 void _semaphoreGetSystemCall(_semaphoreGetArg_t *arg) {
 
-    status_t                            returnValue;
+	_rtosStatus_t                       returnValue;
     _semaphoreControlBlock_t            *semaphore;
     _semaphoreId_t                      semaphoreId;
     _semaphoreCount_t                   semaphoreCount;
@@ -398,9 +398,9 @@ void _semaphoreGetSystemCall(_semaphoreGetArg_t *arg) {
 
 
 
-status_t semaphoreRelease(semaphoreId_t id) {
+rtosStatus_t semaphoreRelease(semaphoreId_t id) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _semaphoreReleaseArg_t              semaphoreReleaseArg;
 
@@ -433,7 +433,7 @@ status_t semaphoreRelease(semaphoreId_t id) {
 
 void _semaphoreReleaseSystemCall(_semaphoreReleaseArg_t *arg) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _semaphoreControlBlock_t            *semaphore;
     _semaphoreId_t                      semaphoreId;
     _semaphoreCount_t                   semaphoreCount;

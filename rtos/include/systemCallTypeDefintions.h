@@ -116,7 +116,7 @@ struct _threadGetPriorityArg {
 struct _threadSetPriorityArg {
     _threadId_t                                       threadIdArg;
     _threadPriority_t                                 threadPriorityArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 struct _threadGetStackSizeArg {
     _threadId_t                                       threadIdArg;
@@ -132,24 +132,24 @@ struct _threadCreateNewArg {
 };
 struct _threadTerminateArg {
     _threadId_t                                       threadIdArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 struct _threadYieldArg {
     _threadId_t                                       currentRunningThreadIdArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 struct _threadSuspendArg {
     _threadId_t                                       threadIdArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 struct _threadResumeArg {
     _threadId_t                                       threadIdArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 struct _threadWaitArg {
     _threadId_t                                       threadIdArg;
     _kernelTick_t                                     numberOfTicksArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 
 
@@ -166,17 +166,17 @@ struct _semaphoreCreateNewArg {
 };
 struct _semaphoreDeleteArg {
     _semaphoreId_t                                    semaphoreIdArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 struct _semaphoreGetArg {
     _semaphoreId_t                                    semaphoreIdArg;
     _kernelTick_t                                     timeOutArg;
     _threadId_t                                       semaphoreCallerIdArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 struct _semaphoreReleaseArg {
     _semaphoreId_t                                    semaphoreIdArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 
 
@@ -192,18 +192,18 @@ struct _mutexCreateNewArg {
 };
 struct _mutexDeleteArg {
     _mutexId_t                                        mutexIdArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 struct _mutexGetArg {
     _mutexId_t                                        mutexIdArg;
     _kernelTick_t                                     timeOutArg;
     _threadId_t                                       mutexCallerIdArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 struct _mutexReleaseArg {
     _mutexId_t                                        mutexIdArg;
     _threadId_t                                       mutexCallerIdArg;
-    _status_t                                         returnValue;
+    _rtosStatus_t                                     returnValue;
 };
 
 

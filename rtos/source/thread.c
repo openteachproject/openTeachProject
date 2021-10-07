@@ -196,9 +196,9 @@ void _threadGetPrioritySystemCall(_threadGetPriorityArg_t *arg) {
 
 
 
-status_t threadSetPriority(threadId_t id, threadPriority_t priority) {
+rtosStatus_t threadSetPriority(threadId_t id, threadPriority_t priority) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _threadSetPriorityArg_t             threadSetPriorityArg;
 
@@ -236,7 +236,7 @@ status_t threadSetPriority(threadId_t id, threadPriority_t priority) {
 
 void _threadSetPrioritySystemCall(_threadSetPriorityArg_t *arg) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _threadControlBlock_t               *thread;
     _threadId_t                         threadId;
     _threadPriority_t                   newPriority;
@@ -617,9 +617,9 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
 
 
 
-status_t threadTerminate(threadId_t id) {
+rtosStatus_t threadTerminate(threadId_t id) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _threadTerminateArg_t               threadTerminateArg;
 
@@ -652,7 +652,7 @@ status_t threadTerminate(threadId_t id) {
 
 void _threadTerminateSystemCall(_threadTerminateArg_t *arg) {
 
-    _status_t                           returnValue = StatusOk;
+	_rtosStatus_t                       returnValue = StatusOk;
     _threadControlBlock_t               *thread;
     _threadId_t                         threadId;
     _threadState_t                      threadState;
@@ -737,9 +737,9 @@ void _threadTerminateSystemCall(_threadTerminateArg_t *arg) {
 
 
 
-status_t threadYield(void) {
+rtosStatus_t threadYield(void) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _threadYieldArg_t                   threadYieldArg;
 
@@ -781,9 +781,9 @@ void _threadYieldSystemCall(_threadYieldArg_t *arg) {
 
 
 
-status_t threadSuspend(threadId_t id) {
+rtosStatus_t threadSuspend(threadId_t id) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _threadSuspendArg_t                 threadSuspendArg;
 
@@ -816,7 +816,7 @@ status_t threadSuspend(threadId_t id) {
 
 void _threadSuspendSystemCall(_threadSuspendArg_t *arg) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _threadControlBlock_t               *thread;
     _threadId_t                         threadId;
     _threadState_t                      threadState;
@@ -877,9 +877,9 @@ void _threadSuspendSystemCall(_threadSuspendArg_t *arg) {
 
 
 
-status_t threadResume(threadId_t id) {
+rtosStatus_t threadResume(threadId_t id) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _threadResumeArg_t                  threadResumeArg;
 
@@ -912,7 +912,7 @@ status_t threadResume(threadId_t id) {
 
 void _threadResumeSystemCall(_threadResumeArg_t *arg) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _threadControlBlock_t               *thread;
     _threadId_t                         threadId;
     _threadState_t                      threadState;
@@ -946,9 +946,9 @@ void _threadResumeSystemCall(_threadResumeArg_t *arg) {
 
 
 
-status_t threadWait(threadId_t id, kernelTick_t numberOfTicks) {
+rtosStatus_t threadWait(threadId_t id, kernelTick_t numberOfTicks) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _threadWaitArg_t                    threadWaitArg;
 

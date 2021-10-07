@@ -48,7 +48,7 @@
 
 #define KernelMajorVersion                  1
 #define KernelMinorVersion                  0
-#define KernelPatchVersion                  0
+#define KernelPatchVersion                  1
 
 #define SystemCallListLength                4
 
@@ -102,7 +102,7 @@ enum _kernelRequest
 
 
 
-enum _status
+enum _rtosStatus
 {
     StatusOk                                = 0,
     StatusError                             = 1,
@@ -190,7 +190,7 @@ typedef queueNode_t                         _kernelSuspendedNode_t;
 typedef queue_t                             _kernelTerminatedList_t;
 typedef queueNode_t                         _kernelTerminatedNode_t;
 typedef enum _kernelRequest                 _kernelRequest_t;
-typedef enum _status                        _status_t;
+typedef enum _rtosStatus                    _rtosStatus_t;
 typedef bool                                _bool_t;
 typedef uint32_t                            _listSize_t;
 typedef uint32_t                            _listKey_t;

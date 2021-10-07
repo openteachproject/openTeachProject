@@ -72,16 +72,16 @@ static threadId_t rtosCreateIdleThread( threadName_t                name,
 
 
 
-status_t rtosInitialize(void) {
+rtosStatus_t rtosInitialize(void) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
 
     returnValue = _kernelInitialize();
     rtosCreateIdleThread("IdleThread", idleThreadFunction, NULL, PriorityIdle, 256);
     return returnValue;
 }
 
-status_t rtosStart(void) {
+rtosStatus_t rtosStart(void) {
 
     return _kernelStart();
 }

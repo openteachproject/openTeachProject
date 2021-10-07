@@ -34,12 +34,16 @@
 
 
 
+_kernelControlBlock_t                   *_kernelControlBlock;
+
+
+
 _kernelControlBlock_t* _kernelGetKernelControlBlock(void) {
 
     return _kernelControlBlock;
 }
 
-_status_t _kernelSystemCall(_kernelSystemCallArg_t *systemCallArg) {
+_rtosStatus_t _kernelSystemCall(_kernelSystemCallArg_t *systemCallArg) {
 
     _kernelSystemCallListIndex_t        index;
     _kernelSystemCallArg_t              **systemCallList;
@@ -67,7 +71,7 @@ _status_t _kernelSystemCall(_kernelSystemCallArg_t *systemCallArg) {
     return StatusOk;
 }
 
-_status_t _kernelSystemCallHandler(void) {
+_rtosStatus_t _kernelSystemCallHandler(void) {
 
     _kernelControlBlock_t               *kernel;
     _kernelSystemCallArg_t              *systemCallArg;
@@ -96,7 +100,7 @@ _status_t _kernelSystemCallHandler(void) {
     return StatusOk;;
 }
 
-_status_t _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg) {
+_rtosStatus_t _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg) {
     
     void                                *specificSystemCallArg;
     _kernelSystemCallNumber_t           systemCallNumber;
@@ -184,7 +188,7 @@ _status_t _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg) {
     return StatusOk;;
 }
 
-_status_t _kernelContextSwitch(void) {
+_rtosStatus_t _kernelContextSwitch(void) {
 
     _threadControlBlock_t                *currentRunningThread;
     _threadId_t                          currentRunningThreadId;
@@ -239,7 +243,7 @@ _status_t _kernelContextSwitch(void) {
     return StatusOk;
 }
 
-_status_t _kernelWaitListHandler(void) {
+_rtosStatus_t _kernelWaitListHandler(void) {
 
     _kernelWaitListNumber_t             waitListNumber;
     _listSize_t                         listSize;
@@ -300,9 +304,9 @@ _status_t _kernelWaitListHandler(void) {
     return StatusOk;
 }
 
-_status_t _kernelInitialize(void) {
+_rtosStatus_t _kernelInitialize(void) {
 
-    _status_t                           returnValue = StatusOk;
+	_rtosStatus_t                       returnValue = StatusOk;
     _kernelControlBlock_t               *kernel;
     _kernelVersion_t                    kernelVersion;
 
@@ -386,9 +390,9 @@ _status_t _kernelInitialize(void) {
 
     return returnValue;
 }
-_status_t _kernelStart(void) {
+_rtosStatus_t _kernelStart(void) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _threadControlBlock_t                *firstThread;
     _threadId_t                          firstThreadId;
     _threadPriority_t                    priority;
@@ -483,7 +487,7 @@ _kernelVersion_t _kernelGetVersion(void) {
     return returnValue;
 }
 
-_status_t _kernelSetVersion(_kernelVersion_t version) {
+_rtosStatus_t _kernelSetVersion(_kernelVersion_t version) {
 
     _kernelControlBlock_t                *kernel;
 
@@ -502,7 +506,7 @@ _kernelState_t _kernelGetState(void) {
     return returnValue;
 }
 
-_status_t _kernelSetState(_kernelState_t state) {
+_rtosStatus_t _kernelSetState(_kernelState_t state) {
     _kernelControlBlock_t                *kernel;
     kernel = _kernelGetKernelControlBlock();
     kernel -> state = state;
@@ -519,7 +523,7 @@ _kernelTick_t _kernelGetTick(void) {
     return returnValue;
 }
 
-_status_t _kernelSetTick(_kernelTick_t tick) {
+_rtosStatus_t _kernelSetTick(_kernelTick_t tick) {
 
     _kernelControlBlock_t                *kernel;
 
@@ -528,7 +532,7 @@ _status_t _kernelSetTick(_kernelTick_t tick) {
     return StatusOk;
 }
 
-_status_t _kernelIncreaseTick(void) {
+_rtosStatus_t _kernelIncreaseTick(void) {
 
     _kernelControlBlock_t                *kernel;
     _kernelTick_t                        tick;
@@ -550,7 +554,7 @@ _threadId_t _kernelGetCurrentRunningThreadId(void) {
     return returnValue;
 }
 
-_status_t _kernelSetCurrentRunningThreadId(_threadId_t threadId) {
+_rtosStatus_t _kernelSetCurrentRunningThreadId(_threadId_t threadId) {
 
     _kernelControlBlock_t                *kernel;
 
@@ -571,7 +575,7 @@ _threadStackPointer_t _kernelGetCurrentRunningThreadStackPointer(void) {
     return returnValue;
 }
 
-_status_t _kernelSetCurrentRunningThreadStackPointer(_threadStackPointer_t stackPointer) {
+_rtosStatus_t _kernelSetCurrentRunningThreadStackPointer(_threadStackPointer_t stackPointer) {
 
     _threadControlBlock_t                *currentRunningThread;
     _threadId_t                          currentRunningThreadId;
@@ -606,9 +610,9 @@ _threadFunctionParameter_t _kernelGetCurrentRunningThreadFunctionParameter(void)
     return returnValue;
 }
 
-_status_t _kernelSystemCallListInitialize(void) {
+_rtosStatus_t _kernelSystemCallListInitialize(void) {
 
-    _status_t                            returnValue = StatusOk;
+	_rtosStatus_t                        returnValue = StatusOk;
     _kernelControlBlock_t                *kernel;
 
     kernel = _kernelGetKernelControlBlock();
@@ -633,9 +637,9 @@ _status_t _kernelSystemCallListInitialize(void) {
     return returnValue;
 }
 
-_status_t _kernelReadyListInitialize(void) {
+_rtosStatus_t _kernelReadyListInitialize(void) {
 
-    _status_t                            returnValue;
+	_rtosStatus_t                        returnValue;
     _kernelControlBlock_t                *kernel;
     _kernelReadyList_t                   *list;
 
@@ -668,8 +672,8 @@ _status_t _kernelReadyListInitialize(void) {
     return returnValue;
 }
 
-_status_t _kernelWaitListInitialize(void) {
-    _status_t                            returnValue;
+_rtosStatus_t _kernelWaitListInitialize(void) {
+	_rtosStatus_t                        returnValue;
     _kernelControlBlock_t                *kernel;
     _kernelWaitList_t                    *list;
 
@@ -702,9 +706,9 @@ _status_t _kernelWaitListInitialize(void) {
     return returnValue;
 }
 
-_status_t _kernelSuspendedListInitialize(void) {
+_rtosStatus_t _kernelSuspendedListInitialize(void) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelControlBlock_t               *kernel;
     _kernelSuspendedList_t              *list;
 
@@ -724,9 +728,9 @@ _status_t _kernelSuspendedListInitialize(void) {
     return returnValue;
 }
 
-_status_t _kernelTerminatedListInitialize(void) {
+_rtosStatus_t _kernelTerminatedListInitialize(void) {
 
-    _status_t                           returnValue;
+	_rtosStatus_t                       returnValue;
     _kernelControlBlock_t               *kernel;
     _kernelTerminatedList_t             *list;
 
@@ -746,7 +750,7 @@ _status_t _kernelTerminatedListInitialize(void) {
     return returnValue;
 }
 
-_status_t _kernelSystemCallRequest(void) {
+_rtosStatus_t _kernelSystemCallRequest(void) {
 
     _kernelSetSystemCallRequest();
 
@@ -755,14 +759,14 @@ _status_t _kernelSystemCallRequest(void) {
     return StatusOk;
 }
 
-_status_t _kernelContextSwitchRequest(void) {
+_rtosStatus_t _kernelContextSwitchRequest(void) {
 
     _kernelSetContextSwitchRequest();
     _portPreSupervisorInterruptTrigger();
     return StatusOk;
 }
 
-_status_t _kernelWaitListHandlerRequest(void) {
+_rtosStatus_t _kernelWaitListHandlerRequest(void) {
 
     _kernelSetWaitListHandlerRequest();
     _portPreSupervisorInterruptTrigger();
@@ -779,7 +783,7 @@ _kernelRequest_t _kernelGetSystemCallRequest(void) {
     return returnValue;
 }
 
-_status_t _kernelSetSystemCallRequest(void) {
+_rtosStatus_t _kernelSetSystemCallRequest(void) {
 
     _kernelControlBlock_t                *kernel;
 
@@ -788,7 +792,7 @@ _status_t _kernelSetSystemCallRequest(void) {
     return StatusOk;
 }
 
-_status_t _kernelUnsetSystemCallRequest(void) {
+_rtosStatus_t _kernelUnsetSystemCallRequest(void) {
 
     _kernelControlBlock_t                *kernel;
 
@@ -807,7 +811,7 @@ _kernelRequest_t _kernelGetContextSwitchRequest(void) {
     return returnValue;
 }
 
-_status_t _kernelSetContextSwitchRequest(void) {
+_rtosStatus_t _kernelSetContextSwitchRequest(void) {
 
     _kernelControlBlock_t                *kernel;
 
@@ -816,7 +820,7 @@ _status_t _kernelSetContextSwitchRequest(void) {
     return StatusOk;
 }
 
-_status_t _kernelUnsetContextSwitchReuest(void) {
+_rtosStatus_t _kernelUnsetContextSwitchReuest(void) {
 
     _kernelControlBlock_t                *kernel;
 
@@ -835,7 +839,7 @@ _kernelRequest_t _kernelGetWaitListHandlerRequest(void) {
     return returnValue;
 }
 
-_status_t _kernelSetWaitListHandlerRequest(void) {
+_rtosStatus_t _kernelSetWaitListHandlerRequest(void) {
 
     _kernelControlBlock_t                *kernel;
 
@@ -844,7 +848,7 @@ _status_t _kernelSetWaitListHandlerRequest(void) {
     return StatusOk;
 }
 
-_status_t _kernelUnsetWaitListHandlerReuest(void) {
+_rtosStatus_t _kernelUnsetWaitListHandlerReuest(void) {
 
     _kernelControlBlock_t                *kernel;
 
@@ -858,7 +862,7 @@ _bool_t _kernelIsInInterrupt(void) {
     return _portIsInInterrupt();
 }
 
-_status_t _kernelThreadStackInitialize(_threadId_t threadId) {
+_rtosStatus_t _kernelThreadStackInitialize(_threadId_t threadId) {
 
     return _portThreadStackInitialize(threadId);
 }
@@ -873,7 +877,7 @@ _atomicResult_t _kernelAtomicWrite32(_atomicValue_t value, _atomicAddress_t addr
     return _portAtomicWrite32(value, address);
 }
 
-_status_t _kernelAtomicClear(void) {
+_rtosStatus_t _kernelAtomicClear(void) {
 
     return _portAtomicClear();
 }

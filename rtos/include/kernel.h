@@ -36,73 +36,73 @@
 
 
 
-_kernelControlBlock_t                  *_kernelControlBlock;
+extern _kernelControlBlock_t           *_kernelControlBlock;
 
 
 
 _kernelControlBlock_t                  *_kernelGetKernelControlBlock(void);
 
-_status_t                               _kernelSystemCall(_kernelSystemCallArg_t *systemCallArg);
-_status_t                               _kernelSystemCallHandler(void);
-_status_t                               _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg);
-_status_t                               _kernelContextSwitch(void);
-_status_t                               _kernelWaitListHandler(void);
+_rtosStatus_t                           _kernelSystemCall(_kernelSystemCallArg_t *systemCallArg);
+_rtosStatus_t                           _kernelSystemCallHandler(void);
+_rtosStatus_t                           _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg);
+_rtosStatus_t                           _kernelContextSwitch(void);
+_rtosStatus_t                           _kernelWaitListHandler(void);
 
-_status_t                               _kernelInitialize(void);
-_status_t                               _kernelStart(void);
+_rtosStatus_t                           _kernelInitialize(void);
+_rtosStatus_t                           _kernelStart(void);
 
 _bool_t                                 _kernelCheckForContextSwitchAfterInsert(_threadId_t threadId);
 _bool_t                                 _kernelCheckForContextSwitchAfterDelete(_threadId_t threadId);
 
 
 _kernelVersion_t                        _kernelGetVersion(void);
-_status_t                               _kernelSetVersion(_kernelVersion_t version);
+_rtosStatus_t                           _kernelSetVersion(_kernelVersion_t version);
 
 _kernelState_t                          _kernelGetState(void);
-_status_t                               _kernelSetState(_kernelState_t state);
+_rtosStatus_t                           _kernelSetState(_kernelState_t state);
 
 _kernelTick_t                           _kernelGetTick(void);
-_status_t                               _kernelSetTick(_kernelTick_t tick);
-_status_t                               _kernelIncreaseTick(void);
+_rtosStatus_t                           _kernelSetTick(_kernelTick_t tick);
+_rtosStatus_t                           _kernelIncreaseTick(void);
 
 _threadId_t                             _kernelGetCurrentRunningThreadId(void);
-_status_t                               _kernelSetCurrentRunningThreadId(_threadId_t threadId);
+_rtosStatus_t                           _kernelSetCurrentRunningThreadId(_threadId_t threadId);
 
 _threadStackPointer_t                   _kernelGetCurrentRunningThreadStackPointer(void);
-_status_t                               _kernelSetCurrentRunningThreadStackPointer(_threadStackPointer_t stackPointer);
+_rtosStatus_t                           _kernelSetCurrentRunningThreadStackPointer(_threadStackPointer_t stackPointer);
 
 _threadFunctionPointer_t                _kernelGetCurrentRunningThreadFunctionPointer(void);
 _threadFunctionParameter_t              _kernelGetCurrentRunningThreadFunctionParameter(void);
 
-_status_t                               _kernelSystemCallListInitialize(void);
-_status_t                               _kernelReadyListInitialize(void);
-_status_t                               _kernelWaitListInitialize(void);
-_status_t                               _kernelSuspendedListInitialize(void);
-_status_t                               _kernelTerminatedListInitialize(void);
+_rtosStatus_t                           _kernelSystemCallListInitialize(void);
+_rtosStatus_t                           _kernelReadyListInitialize(void);
+_rtosStatus_t                           _kernelWaitListInitialize(void);
+_rtosStatus_t                           _kernelSuspendedListInitialize(void);
+_rtosStatus_t                           _kernelTerminatedListInitialize(void);
 
-_status_t                               _kernelSystemCallRequest(void);
-_status_t                               _kernelContextSwitchRequest(void);
-_status_t                               _kernelWaitListHandlerRequest(void);
+_rtosStatus_t                           _kernelSystemCallRequest(void);
+_rtosStatus_t                           _kernelContextSwitchRequest(void);
+_rtosStatus_t                           _kernelWaitListHandlerRequest(void);
 
 _kernelRequest_t                        _kernelGetSystemCallRequest(void);
-_status_t                               _kernelSetSystemCallRequest(void);
-_status_t                               _kernelUnsetSystemCallRequest(void);
+_rtosStatus_t                           _kernelSetSystemCallRequest(void);
+_rtosStatus_t                           _kernelUnsetSystemCallRequest(void);
 
 _kernelRequest_t                        _kernelGetContextSwitchRequest(void);
-_status_t                               _kernelSetContextSwitchRequest(void);
-_status_t                               _kernelUnsetContextSwitchReuest(void);
+_rtosStatus_t                           _kernelSetContextSwitchRequest(void);
+_rtosStatus_t                           _kernelUnsetContextSwitchReuest(void);
 
 _kernelRequest_t                        _kernelGetWaitListHandlerRequest(void);
-_status_t                               _kernelSetWaitListHandlerRequest(void);
-_status_t                               _kernelUnsetWaitListHandlerReuest(void);
+_rtosStatus_t                           _kernelSetWaitListHandlerRequest(void);
+_rtosStatus_t                           _kernelUnsetWaitListHandlerReuest(void);
 
 _bool_t                                 _kernelIsInInterrupt(void);
 
-_status_t                               _kernelThreadStackInitialize(_threadId_t threadId);
+_rtosStatus_t                           _kernelThreadStackInitialize(_threadId_t threadId);
 
 _atomicValue_t                          _kernelAtomicRead32(_atomicAddress_t address);
 _atomicResult_t                         _kernelAtomicWrite32(_atomicValue_t value, _atomicAddress_t address);
-_status_t                               _kernelAtomicClear(void);
+_rtosStatus_t                           _kernelAtomicClear(void);
 
 
 

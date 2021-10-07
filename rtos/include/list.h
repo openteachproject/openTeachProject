@@ -38,11 +38,11 @@
 
 _kernelReadyNode_t                     *_listCreateNewReadyNode(_threadId_t id);
 _kernelReadyList_t                     *_listCreateNewReadyList(void);
-_status_t                               _listInsertToReadyList(_threadId_t id);
-_status_t                               _listDeleteFromReadyList(_threadId_t id);
+_rtosStatus_t                           _listInsertToReadyList(_threadId_t id);
+_rtosStatus_t                           _listDeleteFromReadyList(_threadId_t id);
 _threadId_t                             _listGetFirstReadyList(_threadPriority_t priority);
 _threadId_t                             _listGetNextReadyList(_threadId_t id);
-_status_t                               _listPushIndexReadyList(_threadPriority_t priority);
+_rtosStatus_t                           _listPushIndexReadyList(_threadPriority_t priority);
 _listSize_t                             _listGetSizeReadyList(_threadPriority_t priority);
 _bool_t                                 _listIsEmptyReadyList(_threadPriority_t priority);
 
@@ -50,8 +50,8 @@ _bool_t                                 _listIsEmptyReadyList(_threadPriority_t 
 
 _kernelWaitNode_t                      *_listCreateNewWaitNode(_threadId_t id);
 _kernelWaitList_t                      *_listCreateNewWaitList(void);
-_status_t                               _listInsertToWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber);
-_status_t                               _listDeleteFromWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber);
+_rtosStatus_t                           _listInsertToWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber);
+_rtosStatus_t                           _listDeleteFromWaitList(_threadId_t id, _kernelWaitListNumber_t waitListNumber);
 _threadId_t                             _listGetFirstWaitList(_kernelWaitListNumber_t waitListNumber);
 _threadId_t                             _listGetNextWaitList(_kernelWaitListNumber_t waitListNumber, _threadId_t id);
 _listSize_t                             _listGetTotalSizeOfWaitLists(void);
@@ -62,8 +62,8 @@ _bool_t                                 _listIsEmptyWaitList(_kernelWaitListNumb
 
 _semaphoreWaitNode_t                   *_listCreateNewSemaphoreWaitNode(_threadId_t id);
 _semaphoreWaitList_t                   *_listCreateNewSemaphoreWaitList(void);
-_status_t                               _listInsertToSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId);
-_status_t                               _listDeleteFromSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId);
+_rtosStatus_t                           _listInsertToSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId);
+_rtosStatus_t                           _listDeleteFromSemaphoreWaitList(_semaphoreId_t semaphoreId, _threadId_t threadId);
 _threadId_t                             _listGetMinSemaphoreWaitList(_semaphoreId_t id);
 _threadId_t                             _listGetMaxSemaphoreWaitList(_semaphoreId_t id);
 _listSize_t                             _listGetSizeSemaphoreWaitList(_semaphoreId_t id);
@@ -73,8 +73,8 @@ _bool_t                                 _listIsEmptySemaphoreWaitList(_semaphore
 
 _mutexWaitNode_t                       *_listCreateNewMutexWaitNode(_threadId_t id);
 _mutexWaitList_t                       *_listCreateNewMutexWaitList(void);
-_status_t                               _listInsertToMutexWaitList(_mutexId_t mutexId, _threadId_t threadId);
-_status_t                               _listDeleteFromMutexWaitList(_mutexId_t mutexId, _threadId_t threadId);
+_rtosStatus_t                           _listInsertToMutexWaitList(_mutexId_t mutexId, _threadId_t threadId);
+_rtosStatus_t                           _listDeleteFromMutexWaitList(_mutexId_t mutexId, _threadId_t threadId);
 _threadId_t                             _listGetMinMutexWaitList(_mutexId_t id);
 _threadId_t                             _listGetMaxMutexWaitList(_mutexId_t id);
 _listSize_t                             _listGetSizeMutexWaitList(_mutexId_t id);
@@ -84,8 +84,8 @@ _bool_t                                 _listIsEmptyMutexWaitList(_mutexId_t id)
 
 _threadOwnedMutexNode_t                *_listCreateNewThreadOwnedMutexNode(_mutexId_t id);
 _threadOwnedMutexList_t                *_listCreateNewThreadOwnedMutexList(void);
-_status_t                               _listInsertToThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId);
-_status_t                               _listDeleteFromThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId);
+_rtosStatus_t                           _listInsertToThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId);
+_rtosStatus_t                           _listDeleteFromThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId);
 _mutexId_t                              _listGetFirstThreadOwnedMutexList(_threadId_t id);
 _mutexId_t                              _listGetNextThreadOwnedMutexList(_threadId_t threadId, _mutexId_t mutexId);
 _listSize_t                             _listGetSizeThreadOwnedMutexList(_threadId_t id);
@@ -95,8 +95,8 @@ _bool_t                                 _listIsEmptyThreadOwnedMutexList(_thread
 
 _kernelSuspendedNode_t                 *_listCreateNewSuspendedNode(_threadId_t id);
 _kernelSuspendedList_t                 *_listCreateNewSuspendedList(void);
-_status_t                               _listInsertToSuspendedList(_threadId_t id);
-_status_t                               _listDeleteFromSuspendedList(_threadId_t id);
+_rtosStatus_t                           _listInsertToSuspendedList(_threadId_t id);
+_rtosStatus_t                           _listDeleteFromSuspendedList(_threadId_t id);
 _threadId_t                             _listGetFirstSuspendedList(void);
 _threadId_t                             _listGetNextSuspendedList(_threadId_t id);
 _listSize_t                             _listGetSizeSuspendedList(void);
@@ -106,8 +106,8 @@ _bool_t                                 _listIsEmptySuspendedList(void);
 
 _kernelTerminatedNode_t                *_listCreateNewTerminatedNode(_threadId_t id);
 _kernelTerminatedList_t                *_listCreateNewTerminatedList(void);
-_status_t                               _listInsertToTerminatedList(_threadId_t id);
-_status_t                               _listDeleteFromTerminatedList(_threadId_t id);
+_rtosStatus_t                           _listInsertToTerminatedList(_threadId_t id);
+_rtosStatus_t                           _listDeleteFromTerminatedList(_threadId_t id);
 _threadId_t                             _listGetFirstTerminatedList(void);
 _threadId_t                             _listGetNextTerminatedList(_threadId_t id);
 _listSize_t                             _listGetSizeTerminatedList(void);

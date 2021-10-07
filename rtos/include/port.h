@@ -34,18 +34,18 @@
 
 
 
-_status_t                               _portDeviceInitialize(void);
-_status_t                               _portTickTimerStart(void);
-_status_t                               _portThreadStackInitialize(_threadId_t id);
+_rtosStatus_t                           _portDeviceInitialize(void);
+_rtosStatus_t                           _portTickTimerStart(void);
+_rtosStatus_t                           _portThreadStackInitialize(_threadId_t id);
 _bool_t                                 _portIsInInterrupt(void);
-_status_t                               _portStartFirstThread(void);
+_rtosStatus_t                           _portStartFirstThread(void);
 
-_status_t                               _portSupervisorInterruptTrigger(void);
-_status_t                               _portPreSupervisorInterruptTrigger(void);
+_rtosStatus_t                           _portSupervisorInterruptTrigger(void);
+_rtosStatus_t                           _portPreSupervisorInterruptTrigger(void);
 
 _atomicValue_t                          _portAtomicRead32(_atomicAddress_t address);
 _atomicResult_t                         _portAtomicWrite32(_atomicValue_t value, _atomicAddress_t address);
-_status_t                               _portAtomicClear(void);
+_rtosStatus_t                           _portAtomicClear(void);
 
 
 

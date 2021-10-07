@@ -38,7 +38,7 @@
 
 typedef _kernelState_t                      kernelState_t;
 typedef _kernelTick_t                       kernelTick_t;
-typedef _status_t                           status_t;
+typedef _rtosStatus_t                       rtosStatus_t;
 typedef _bool_t                             bool_t;
 
 
@@ -70,8 +70,8 @@ typedef _mutexType_t                        mutexType_t;
 
 
 
-status_t                                    rtosInitialize(void);
-status_t                                    rtosStart(void);
+rtosStatus_t                                rtosInitialize(void);
+rtosStatus_t                                rtosStart(void);
 
 
 
@@ -81,7 +81,7 @@ threadId_t                                  threadGetId(void);
 threadName_t                                threadGetName(threadId_t id);
 threadState_t                               threadGetState(threadId_t id);
 threadPriority_t                            threadGetPriority(threadId_t id);
-status_t                                    threadSetPriority(threadId_t id, threadPriority_t priority);
+rtosStatus_t                                threadSetPriority(threadId_t id, threadPriority_t priority);
 threadStackSize_t                           threadGetStackSize(threadId_t id);
 threadId_t                                  threadCreateNew(    threadName_t                name,
                                                                 threadFunctionPointer_t     functionPointer,
@@ -89,11 +89,11 @@ threadId_t                                  threadCreateNew(    threadName_t    
                                                                 threadPriority_t            priority,
                                                                 threadStackSize_t           stackSize
                                                                 );
-status_t                                    threadTerminate(threadId_t id);
-status_t                                    threadYield(void);
-status_t                                    threadSuspend(threadId_t id);
-status_t                                    threadResume(threadId_t id);
-status_t                                    threadWait(threadId_t id, kernelTick_t numberOfTicks);
+rtosStatus_t                                threadTerminate(threadId_t id);
+rtosStatus_t                                threadYield(void);
+rtosStatus_t                                threadSuspend(threadId_t id);
+rtosStatus_t                                threadResume(threadId_t id);
+rtosStatus_t                                threadWait(threadId_t id, kernelTick_t numberOfTicks);
 
 
 
@@ -101,17 +101,17 @@ semaphoreName_t                             semaphoreGetName(semaphoreId_t id);
 semaphoreId_t                               semaphoreCreateNew(    semaphoreName_t name,
                                                                    semaphoreCount_t maxCount,
                                                                    semaphoreCount_t initialCount);
-status_t                                    semaphoreDelete(semaphoreId_t id);
-status_t                                    semaphoreGet(semaphoreId_t id, kernelTick_t timeOut);
-status_t                                    semaphoreRelease(semaphoreId_t id);
+rtosStatus_t                                semaphoreDelete(semaphoreId_t id);
+rtosStatus_t                                semaphoreGet(semaphoreId_t id, kernelTick_t timeOut);
+rtosStatus_t                                semaphoreRelease(semaphoreId_t id);
 
 
 
 mutexName_t                                 mutexGetName(mutexId_t id);
 mutexId_t                                   mutexCreateNew(mutexName_t name, mutexType_t type);
-status_t                                    mutexDelete(mutexId_t id);
-status_t                                    mutexGet(mutexId_t id, kernelTick_t timeOut);
-status_t                                    mutexRelease(mutexId_t id);
+rtosStatus_t                                mutexDelete(mutexId_t id);
+rtosStatus_t                                mutexGet(mutexId_t id, kernelTick_t timeOut);
+rtosStatus_t                                mutexRelease(mutexId_t id);
 
 
 

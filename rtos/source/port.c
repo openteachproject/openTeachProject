@@ -39,20 +39,20 @@ static uint32_t                         _xpsrInitialValue(void);
 
 
 
-_status_t _portDeviceInitialize(void) {
+_rtosStatus_t _portDeviceInitialize(void) {
 
     _svcPendsvSetup();
     return StatusOk;
 }
 
-_status_t _portTickTimerStart(void) {
+_rtosStatus_t _portTickTimerStart(void) {
 
     SysTick_Config(16000000 / 1000);
     NVIC_SetPriority(SysTick_IRQn, 0);
     return StatusOk;
 }
 
-_status_t _portThreadStackInitialize(_threadId_t threadId) {
+_rtosStatus_t _portThreadStackInitialize(_threadId_t threadId) {
 
     _threadControlBlock_t               *thread;
     _threadStackPointer_t               threadStackPointer;
@@ -88,7 +88,7 @@ _bool_t _portIsInInterrupt(void) {
     return (_isIrqMode() | _isIrqMasked());
 }
 
-_status_t _portStartFirstThread(void) {
+_rtosStatus_t _portStartFirstThread(void) {
 
     __ASM (
 
@@ -125,13 +125,13 @@ _status_t _portStartFirstThread(void) {
     return StatusOk;
 }
 
-_status_t _portSupervisorInterruptTrigger(void) {
+_rtosStatus_t _portSupervisorInterruptTrigger(void) {
 
     _svcCall();
     return StatusOk;
 }
 
-_status_t _portPreSupervisorInterruptTrigger(void) {
+_rtosStatus_t _portPreSupervisorInterruptTrigger(void) {
 
     _setPendsv();
     return StatusOk;
@@ -147,7 +147,7 @@ _atomicResult_t _portAtomicWrite32(_atomicValue_t value, _atomicAddress_t addres
     return __STREXW(value, address);
 }
 
-_status_t _portAtomicClear(void) {
+_rtosStatus_t _portAtomicClear(void) {
 
     __CLREX();
     return StatusOk;
