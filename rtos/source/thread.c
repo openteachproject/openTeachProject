@@ -197,13 +197,146 @@ void _threadGetPrioritySystemCall(_threadGetPriorityArg_t *arg) {
 
 
 status_t threadSetPriority(threadId_t id, threadPriority_t priority) {
-    return StatusError;
+
+    _status_t                           returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadSetPriorityArg_t             threadSetPriorityArg;
+
+    if ( id == NULL ||
+         priority >= NumberOfPriorityLevels ||
+         priority == PriorityIdle)
+    {
+
+        returnValue = StatusErrorParameter;
+    }
+    else {
+
+        if (_kernelIsInInterrupt()) {
+
+            returnValue = StatusErrorInerrupt;
+        }
+        else {
+
+            threadSetPriorityArg . threadIdArg = id;
+            threadSetPriorityArg . threadPriorityArg = priority;
+
+            systemCallArg . systemCallNumber = ThreadSetPrioritySystemCallNumber;
+            systemCallArg . specificSystemCallArg = &threadSetPriorityArg;
+
+            _kernelSystemCall(&systemCallArg);
+
+            returnValue = threadSetPriorityArg . returnValue;
+        }
+    }
+
+    return returnValue;
 }
 
 
 
 void _threadSetPrioritySystemCall(_threadSetPriorityArg_t *arg) {
 
+    _status_t                           returnValue;
+    _threadControlBlock_t               *thread;
+    _threadId_t                         threadId;
+    _threadPriority_t                   newPriority;
+    _threadPriority_t                   oldPriority;
+    _threadState_t                      threadState;
+    _kernelState_t                      kernelState;
+    _threadControlBlock_t               *currentRunningThread;
+    _threadId_t                         currentRunningThreadId;
+    _threadPriority_t                   currentRunningThreadPriority;
+
+    threadId = arg -> threadIdArg;
+    thread = (_threadControlBlock_t*)threadId;
+    oldPriority = thread -> priority;
+    newPriority = arg -> threadPriorityArg;
+    threadState = thread -> state;
+
+    if (newPriority == oldPriority) {
+
+        returnValue = StatusOk;
+    }
+    else {
+
+        if (thread -> state == ThreadStateRunning || thread -> state == ThreadStateReady) {
+
+            _listDeleteFromReadyList(threadId);
+
+            thread -> priority = newPriority;
+
+            _listInsertToReadyList(threadId);
+
+            kernelState = _kernelGetState();
+
+            if (kernelState == KernelStateRunning) {
+
+                currentRunningThreadId = _kernelGetCurrentRunningThreadId();
+                currentRunningThread = (_threadControlBlock_t*)currentRunningThreadId;
+                currentRunningThreadPriority = currentRunningThread -> priority;
+
+                if (threadId == currentRunningThreadId) {
+
+                    _kernelContextSwitchRequest();
+                }
+                else if (threadId != currentRunningThreadId && newPriority > currentRunningThreadPriority) {
+
+                    _kernelContextSwitchRequest();
+                }
+                else {
+
+                }
+            }
+
+            returnValue = StatusOk;
+        }
+        else if (threadState == ThreadStateWaited) {
+
+            if (thread -> semaphoreWaitingFor != NULL) {
+
+                _listDeleteFromSemaphoreWaitList(thread -> semaphoreWaitingFor, threadId);
+
+                thread -> priority = newPriority;
+                thread -> semaphoreWaitNode -> key = newPriority;
+                thread -> mutexWaitNode -> key = newPriority;
+
+                _listInsertToSemaphoreWaitList(thread -> semaphoreWaitingFor, threadId);
+            }
+            else if (thread -> mutexWaitingFor != NULL) {
+
+                _listDeleteFromMutexWaitList(thread -> mutexWaitingFor, threadId);
+
+                thread -> priority = newPriority;
+                thread -> semaphoreWaitNode -> key = newPriority;
+                thread -> mutexWaitNode -> key = newPriority;
+
+                _listInsertToMutexWaitList(thread -> mutexWaitingFor, threadId);
+            }
+            else {
+                //
+            }
+
+            thread -> priority = newPriority;
+
+            returnValue = StatusOk;
+        }
+        else if (threadState == ThreadStateSuspended) {
+
+            thread -> priority = newPriority;
+
+            returnValue = StatusOk;
+        }
+        else if (threadState == ThreadStateTerminated) {
+
+            returnValue = StatusErrorThreadState;
+        }
+        else {
+            //
+        }
+    }
+
+    arg -> returnValue = returnValue;
+    return;
 }
 
 
@@ -311,6 +444,8 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
     _threadStackPointer_t                  threadStackTop;
     _threadStackSize_t                     threadStackSize;
     _kernelReadyNode_t                    *threadReadyNode;
+    _kernelSuspendedNode_t                *threadSuspendedNode;
+    _kernelTerminatedNode_t               *threadTerminatedNode;
     _kernelWaitNode_t                     *threadWaitNode;
     _semaphoreWaitNode_t                  *semaphoreWaitNode;
     _mutexWaitNode_t                      *mutexWaitNode;
@@ -395,6 +530,24 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
 
         newThread -> returnTick = 0;
 
+        threadSuspendedNode = _listCreateNewSuspendedNode(threadId);
+        if (threadReadyNode == NULL) {
+            returnValue = NULL;
+            break;
+        }
+        else {
+            newThread -> suspendedNode = threadSuspendedNode;
+        }
+
+        threadTerminatedNode = _listCreateNewTerminatedNode(threadId);
+        if (threadReadyNode == NULL) {
+            returnValue = NULL;
+            break;
+        }
+        else {
+            newThread -> terminatedNode = threadTerminatedNode;
+        }
+
         semaphoreWaitNode = _listCreateNewSemaphoreWaitNode(threadId);
         if (semaphoreWaitNode == NULL) {
             returnValue = NULL;
@@ -441,6 +594,8 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
         free(threadStackLimit);
         free(threadReadyNode);
         free(threadWaitNode);
+        free(threadSuspendedNode);
+        free(threadTerminatedNode);
         free(semaphoreWaitNode);
     }
     else {
@@ -463,49 +618,330 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
 
 
 status_t threadTerminate(threadId_t id) {
-    return StatusError;
+
+    _status_t                           returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadTerminateArg_t               threadTerminateArg;
+
+    if (id == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+
+        if (_kernelIsInInterrupt()) {
+
+            returnValue = StatusErrorInerrupt;
+        }
+        else {
+
+            threadTerminateArg . threadIdArg = id;
+
+            systemCallArg . systemCallNumber = ThreadTerminateSystemCallNumber;
+            systemCallArg . specificSystemCallArg = &threadTerminateArg;
+
+            _kernelSystemCall(&systemCallArg);
+
+            returnValue = threadTerminateArg . returnValue;
+        }
+    }
+
+    return returnValue;
 }
 
 
 
 void _threadTerminateSystemCall(_threadTerminateArg_t *arg) {
 
+    _status_t                           returnValue = StatusOk;
+    _threadControlBlock_t               *thread;
+    _threadId_t                         threadId;
+    _threadState_t                      threadState;
+    _listSize_t                         listSize;
+    _kernelTick_t                       returnTick;
+    _kernelWaitListNumber_t             waitListNumber;
+
+
+    threadId = arg -> threadIdArg;
+    thread = (_threadControlBlock_t*)threadId;
+    threadState = thread -> state;
+
+    listSize = _listGetSizeThreadOwnedMutexList(threadId);
+
+    if (listSize > 0) {
+
+        returnValue = StatusErrorResource;
+
+        arg -> returnValue = returnValue;
+        return;
+    }
+
+    if (threadState == ThreadStateRunning || threadState == ThreadStateReady) {
+
+        _listDeleteFromReadyList(threadId);
+
+        _listInsertToTerminatedList(threadId);
+        thread -> state = ThreadStateTerminated;
+
+        if (_kernelCheckForContextSwitchAfterDelete(threadId)) {
+
+            _kernelContextSwitchRequest();
+        }
+
+        returnValue = StatusOk;
+    }
+    else if (threadState == ThreadStateWaited) {
+
+        if (thread -> semaphoreWaitingFor != NULL) {
+            _listDeleteFromSemaphoreWaitList(thread -> semaphoreWaitingFor, threadId);
+            thread -> semaphoreWaitingFor = NULL;
+
+        }
+        else if (thread -> mutexWaitingFor != NULL) {
+            _listDeleteFromMutexWaitList(thread -> mutexWaitingFor, threadId);
+            thread -> mutexWaitingFor = NULL;
+        }
+        else {
+            //Thread has not waited for a resource
+        }
+
+        returnTick = thread -> returnTick;
+        waitListNumber = returnTick % NumberOfWaitLists;
+        thread -> returnTick = 0;
+        _listDeleteFromWaitList(threadId, waitListNumber);
+
+        _listInsertToTerminatedList(threadId);
+        thread -> state = ThreadStateTerminated;
+
+        returnValue = StatusOk;
+    }
+    else if (threadState == ThreadStateSuspended) {
+
+        _listDeleteFromSuspendedList(threadId);
+
+        _listInsertToTerminatedList(threadId);
+        thread -> state = ThreadStateTerminated;
+
+        returnValue = StatusOk;
+    }
+    else if (threadState == ThreadStateTerminated) {
+
+        returnValue = StatusErrorThreadState;
+    }
+    else {
+        //
+    }
+
+    arg -> returnValue = returnValue;
+    return;
 }
 
 
 
 status_t threadYield(void) {
-    return StatusError;
+
+    _status_t                           returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadYieldArg_t                   threadYieldArg;
+
+
+    if (_kernelIsInInterrupt()) {
+        returnValue = StatusErrorInerrupt;
+    }
+    else {
+
+        threadYieldArg . currentRunningThreadIdArg = _kernelGetCurrentRunningThreadId();
+
+        systemCallArg . systemCallNumber = ThreadYieldSystemCallNumber;
+        systemCallArg . specificSystemCallArg = &threadYieldArg;
+
+        _kernelSystemCall(&systemCallArg);
+
+        returnValue = threadYieldArg . returnValue;
+    }
+
+    return returnValue;
 }
 
 
 
 void _threadYieldSystemCall(_threadYieldArg_t *arg) {
 
+    _threadId_t                         currentRunningThreadId;
+
+    currentRunningThreadId = arg -> currentRunningThreadIdArg;
+
+    if (currentRunningThreadId == _kernelGetCurrentRunningThreadId()) {
+
+        _kernelContextSwitchRequest();
+    }
+
+    arg -> returnValue = StatusOk;
+    return;
 }
 
 
 
 status_t threadSuspend(threadId_t id) {
-    return StatusError;
+
+    _status_t                           returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadSuspendArg_t                 threadSuspendArg;
+
+    if (id == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+
+        if (_kernelIsInInterrupt()) {
+
+            returnValue = StatusErrorInerrupt;
+        }
+        else {
+
+            threadSuspendArg . threadIdArg = id;
+
+            systemCallArg . systemCallNumber = ThreadSuspendSystemCallNumber;
+            systemCallArg . specificSystemCallArg = &threadSuspendArg;
+
+            _kernelSystemCall(&systemCallArg);
+
+            returnValue = threadSuspendArg . returnValue;
+        }
+    }
+
+    return returnValue;
 }
 
 
 
 void _threadSuspendSystemCall(_threadSuspendArg_t *arg) {
 
+    _status_t                           returnValue;
+    _threadControlBlock_t               *thread;
+    _threadId_t                         threadId;
+    _threadState_t                      threadState;
+    _kernelTick_t                       returnTick;
+    _kernelWaitListNumber_t             waitListNumber;
+
+    threadId = arg -> threadIdArg;
+    thread = (_threadControlBlock_t*)threadId;
+    threadState = thread -> state;
+
+    if (threadState == ThreadStateRunning || threadState == ThreadStateReady) {
+
+        _listDeleteFromReadyList(threadId);
+
+        _listInsertToSuspendedList(threadId);
+        thread -> state = ThreadStateSuspended;
+
+        if (_kernelCheckForContextSwitchAfterDelete(threadId)) {
+
+            _kernelContextSwitchRequest();
+        }
+
+        returnValue = StatusOk;
+    }
+    else if (threadState == ThreadStateWaited) {
+
+        if (thread -> semaphoreWaitingFor != NULL) {
+            _listDeleteFromSemaphoreWaitList(thread -> semaphoreWaitingFor, threadId);
+            thread -> semaphoreWaitingFor = NULL;
+
+        }
+        else if (thread -> mutexWaitingFor != NULL) {
+            _listDeleteFromMutexWaitList(thread -> mutexWaitingFor, threadId);
+            thread -> mutexWaitingFor = NULL;
+        }
+        else {
+            //Thread has not waited for a resource
+        }
+
+        returnTick = thread -> returnTick;
+        waitListNumber = returnTick % NumberOfWaitLists;
+        thread -> returnTick = 0;
+        _listDeleteFromWaitList(threadId, waitListNumber);
+
+        _listInsertToSuspendedList(threadId);
+        thread -> state = ThreadStateSuspended;
+
+        returnValue = StatusOk;
+    }
+    else if (threadState == ThreadStateSuspended || threadState == ThreadStateTerminated) {
+
+        returnValue = StatusErrorThreadState;
+    }
+
+    arg -> returnValue = returnValue;
+    return;
 }
 
 
 
 status_t threadResume(threadId_t id) {
-    return StatusError;
+
+    _status_t                           returnValue;
+    _kernelSystemCallArg_t              systemCallArg;
+    _threadResumeArg_t                  threadResumeArg;
+
+    if (id == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+
+        if (_kernelIsInInterrupt()) {
+
+            returnValue = StatusErrorInerrupt;
+        }
+        else {
+
+            threadResumeArg . threadIdArg = id;
+
+            systemCallArg . systemCallNumber = ThreadResumeSystemCallNumber;
+            systemCallArg . specificSystemCallArg = &threadResumeArg;
+
+            _kernelSystemCall(&systemCallArg);
+
+            returnValue = threadResumeArg . returnValue;
+        }
+    }
+
+    return returnValue;
 }
 
 
 
 void _threadResumeSystemCall(_threadResumeArg_t *arg) {
 
+    _status_t                           returnValue;
+    _threadControlBlock_t               *thread;
+    _threadId_t                         threadId;
+    _threadState_t                      threadState;
+
+    threadId = arg -> threadIdArg;
+    thread = (_threadControlBlock_t*)threadId;
+    threadState = thread -> state;
+
+    if (threadState == ThreadStateSuspended) {
+
+        _listDeleteFromSuspendedList(threadId);
+
+        _listInsertToReadyList(threadId);
+        thread -> state = ThreadStateReady;
+
+        if (_kernelCheckForContextSwitchAfterInsert(threadId)) {
+
+            _kernelContextSwitchRequest();
+        }
+
+        returnValue = StatusOk;
+    }
+    else {
+
+        returnValue = StatusErrorThreadState;
+    }
+
+    arg -> returnValue = returnValue;
+    return;
 }
 
 

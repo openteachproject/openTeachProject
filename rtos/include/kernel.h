@@ -77,6 +77,8 @@ _threadFunctionParameter_t              _kernelGetCurrentRunningThreadFunctionPa
 _status_t                               _kernelSystemCallListInitialize(void);
 _status_t                               _kernelReadyListInitialize(void);
 _status_t                               _kernelWaitListInitialize(void);
+_status_t                               _kernelSuspendedListInitialize(void);
+_status_t                               _kernelTerminatedListInitialize(void);
 
 _status_t                               _kernelSystemCallRequest(void);
 _status_t                               _kernelContextSwitchRequest(void);

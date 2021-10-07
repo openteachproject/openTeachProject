@@ -351,6 +351,16 @@ _status_t _kernelInitialize(void) {
             break;
         }
 
+        returnValue = _kernelSuspendedListInitialize();
+        if (returnValue != StatusOk) {
+            break;
+        }
+
+        returnValue = _kernelTerminatedListInitialize();
+        if (returnValue != StatusOk) {
+            break;
+        }
+
         break;
     }
     if (returnValue != StatusOk) {
@@ -366,6 +376,10 @@ _status_t _kernelInitialize(void) {
         for(_listSize_t index = 0 ; index < NumberOfWaitLists ; index++) {
             free(kernel -> waitList[index]);
         }
+
+        free(kernel -> suspendedList);
+
+        free(kernel -> terminatedList);
     }
 
     _portDeviceInitialize();
@@ -681,6 +695,50 @@ _status_t _kernelWaitListInitialize(void) {
         for(_listSize_t index = 0 ; index < NumberOfWaitLists ; index++) {
             free(kernel -> waitList[index]);
         }
+    }
+
+
+
+    return returnValue;
+}
+
+_status_t _kernelSuspendedListInitialize(void) {
+
+    _status_t                           returnValue;
+    _kernelControlBlock_t               *kernel;
+    _kernelSuspendedList_t              *list;
+
+    kernel = _kernelGetKernelControlBlock();
+
+    list = _listCreateNewSuspendedList();
+    if (list == NULL) {
+        returnValue = StatusErrorHeapMemory;
+    }
+    else {
+        kernel -> suspendedList = list;
+        returnValue = StatusOk;
+    }
+
+
+
+    return returnValue;
+}
+
+_status_t _kernelTerminatedListInitialize(void) {
+
+    _status_t                           returnValue;
+    _kernelControlBlock_t               *kernel;
+    _kernelTerminatedList_t             *list;
+
+    kernel = _kernelGetKernelControlBlock();
+
+    list = _listCreateNewTerminatedList();
+    if (list == NULL) {
+        returnValue = StatusErrorHeapMemory;
+    }
+    else {
+        kernel -> terminatedList = list;
+        returnValue = StatusOk;
     }
 
 

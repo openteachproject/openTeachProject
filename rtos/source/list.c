@@ -875,3 +875,306 @@ _bool_t _listIsEmptyThreadOwnedMutexList(_threadId_t id) {
     }
     return returnValue;
 }
+
+_kernelSuspendedNode_t* _listCreateNewSuspendedNode(_threadId_t id) {
+
+    _kernelSuspendedNode_t               *newNode;
+
+    if (id == NULL) {
+        newNode = NULL;
+    }
+    else {
+        newNode = QueueCreateNewNode(id, 0);
+    }
+    return newNode;
+}
+
+_kernelSuspendedList_t* _listCreateNewSuspendedList(void) {
+
+    _kernelSuspendedList_t               *newList;
+
+    newList = QueueCreateNewQueue();
+    return newList;
+}
+
+_status_t _listInsertToSuspendedList(_threadId_t id) {
+
+    _status_t                            returnValue;
+    _kernelSuspendedList_t               *list;
+    _kernelSuspendedNode_t               *node;
+    _kernelControlBlock_t                *kernel;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        thread = (_threadControlBlock_t*)id;
+        list = kernel -> suspendedList;
+        node = thread -> suspendedNode;
+        QueueEnqueue(list, node);
+        returnValue = StatusOk;
+    }
+    return returnValue;
+}
+
+_status_t _listDeleteFromSuspendedList(_threadId_t id) {
+
+    _status_t                            returnValue;
+    _kernelSuspendedList_t               *list;
+    _kernelSuspendedNode_t               *node;
+    _kernelControlBlock_t                *kernel;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        returnValue = StatusOk;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        thread = (_threadControlBlock_t*)id;
+        list = kernel -> suspendedList;
+        node = thread -> suspendedNode;
+        if (thread -> state == ThreadStateSuspended) {
+            QueueDeleteNode(list, node);
+            returnValue = StatusOk;
+        }
+        else {
+            returnValue = StatusErrorList;
+        }
+    }
+    return returnValue;
+}
+
+_threadId_t _listGetFirstSuspendedList(void) {
+
+    _threadId_t                          firstThreadId;
+    _kernelSuspendedList_t               *list;
+    _kernelSuspendedNode_t               *node;
+    _kernelControlBlock_t                *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    list = kernel -> suspendedList;
+    if (QueueGetSize(list) == 0) {
+        firstThreadId = NULL;
+    }
+    else {
+        node = QueueHead(list);
+        firstThreadId = (_threadId_t)(node -> element);
+    }
+    return firstThreadId;
+}
+
+_threadId_t _listGetNextSuspendedList(_threadId_t id) {
+
+    _threadId_t                          nextThreadId;
+    _kernelSuspendedList_t               *list;
+    _kernelSuspendedNode_t               *node;
+    _kernelSuspendedNode_t               *nextNode;
+    _kernelControlBlock_t                *kernel;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        nextThreadId = NULL;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        thread = (_threadControlBlock_t*)id;
+        list = kernel -> suspendedList;
+        node = thread -> suspendedNode;
+        if (thread -> state == ThreadStateSuspended) {
+            if (QueueGetSize(list) == 1) {
+                nextNode = node;
+            }
+            else {
+                nextNode = QueueGetNextNode(node);
+            }
+            nextThreadId = (_threadId_t)(nextNode -> element);
+        }
+        else {
+            nextThreadId = NULL;
+        }
+    }
+    return nextThreadId;
+}
+
+_listSize_t _listGetSizeSuspendedList(void) {
+
+    _listSize_t                          listSize;
+    _kernelSuspendedList_t               *list;
+    _kernelControlBlock_t                *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    list = kernel -> suspendedList;
+    listSize = QueueGetSize(list);
+    return listSize;
+}
+
+_bool_t _listIsEmptySuspendedList(void) {
+
+    _bool_t                              returnValue;
+    _kernelSuspendedList_t               *list;
+    _kernelControlBlock_t                *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    list = kernel -> suspendedList;
+    if (QueueGetSize(list) == 0) {
+        returnValue = true;
+    }
+    else {
+        returnValue = false;
+    }
+    return returnValue;
+}
+
+_kernelTerminatedNode_t* _listCreateNewTerminatedNode(_threadId_t id) {
+
+    _kernelTerminatedNode_t              *newNode;
+
+    if (id == NULL) {
+        newNode = NULL;
+    }
+    else {
+        newNode = QueueCreateNewNode(id, 0);
+    }
+    return newNode;
+}
+
+_kernelTerminatedList_t* _listCreateNewTerminatedList(void) {
+
+    _kernelTerminatedList_t              *newList;
+
+    newList = QueueCreateNewQueue();
+    return newList;
+}
+
+_status_t _listInsertToTerminatedList(_threadId_t id) {
+
+    _status_t                            returnValue;
+    _kernelTerminatedList_t              *list;
+    _kernelTerminatedNode_t              *node;
+    _kernelControlBlock_t                *kernel;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        thread = (_threadControlBlock_t*)id;
+        list = kernel -> terminatedList;
+        node = thread -> terminatedNode;
+        QueueEnqueue(list, node);
+        returnValue = StatusOk;
+    }
+    return returnValue;
+}
+
+_status_t _listDeleteFromTerminatedList(_threadId_t id) {
+
+    _status_t                            returnValue;
+    _kernelTerminatedList_t              *list;
+    _kernelTerminatedNode_t              *node;
+    _kernelControlBlock_t                *kernel;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        returnValue = StatusOk;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        thread = (_threadControlBlock_t*)id;
+        list = kernel -> terminatedList;
+        node = thread -> terminatedNode;
+        if (thread -> state == ThreadStateTerminated) {
+            QueueDeleteNode(list, node);
+            returnValue = StatusOk;
+        }
+        else {
+            returnValue = StatusErrorList;
+        }
+    }
+    return returnValue;
+}
+
+_threadId_t _listGetFirstTerminatedList(void) {
+
+    _threadId_t                          firstThreadId;
+    _kernelTerminatedList_t              *list;
+    _kernelTerminatedNode_t              *node;
+    _kernelControlBlock_t                *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    list = kernel -> terminatedList;
+    if (QueueGetSize(list) == 0) {
+        firstThreadId = NULL;
+    }
+    else {
+        node = QueueHead(list);
+        firstThreadId = (_threadId_t)(node -> element);
+    }
+    return firstThreadId;
+}
+
+_threadId_t _listGetNextTerminatedList(_threadId_t id) {
+
+    _threadId_t                          nextThreadId;
+    _kernelTerminatedList_t              *list;
+    _kernelTerminatedNode_t              *node;
+    _kernelTerminatedNode_t              *nextNode;
+    _kernelControlBlock_t                *kernel;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        nextThreadId = NULL;
+    }
+    else {
+        kernel = _kernelGetKernelControlBlock();
+        thread = (_threadControlBlock_t*)id;
+        list = kernel -> terminatedList;
+        node = thread -> terminatedNode;
+        if (thread -> state == ThreadStateTerminated) {
+            if (QueueGetSize(list) == 1) {
+                nextNode = node;
+            }
+            else {
+                nextNode = QueueGetNextNode(node);
+            }
+            nextThreadId = (_threadId_t)(nextNode -> element);
+        }
+        else {
+            nextThreadId = NULL;
+        }
+    }
+    return nextThreadId;
+}
+
+_listSize_t _listGetSizeTerminatedList(void) {
+
+    _listSize_t                          listSize;
+    _kernelTerminatedList_t              *list;
+    _kernelControlBlock_t                *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    list = kernel -> terminatedList;
+    listSize = QueueGetSize(list);
+    return listSize;
+}
+
+_bool_t _listIsEmptyTerminatedList(void) {
+
+    _bool_t                              returnValue;
+    _kernelTerminatedList_t              *list;
+    _kernelControlBlock_t                *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    list = kernel -> terminatedList;
+    if (QueueGetSize(list) == 0) {
+        returnValue = true;
+    }
+    else {
+        returnValue = false;
+    }
+    return returnValue;
+}
+

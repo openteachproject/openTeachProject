@@ -93,4 +93,26 @@ _bool_t                                 _listIsEmptyThreadOwnedMutexList(_thread
 
 
 
+_kernelSuspendedNode_t                 *_listCreateNewSuspendedNode(_threadId_t id);
+_kernelSuspendedList_t                 *_listCreateNewSuspendedList(void);
+_status_t                               _listInsertToSuspendedList(_threadId_t id);
+_status_t                               _listDeleteFromSuspendedList(_threadId_t id);
+_threadId_t                             _listGetFirstSuspendedList(void);
+_threadId_t                             _listGetNextSuspendedList(_threadId_t id);
+_listSize_t                             _listGetSizeSuspendedList(void);
+_bool_t                                 _listIsEmptySuspendedList(void);
+
+
+
+_kernelTerminatedNode_t                *_listCreateNewTerminatedNode(_threadId_t id);
+_kernelTerminatedList_t                *_listCreateNewTerminatedList(void);
+_status_t                               _listInsertToTerminatedList(_threadId_t id);
+_status_t                               _listDeleteFromTerminatedList(_threadId_t id);
+_threadId_t                             _listGetFirstTerminatedList(void);
+_threadId_t                             _listGetNextTerminatedList(_threadId_t id);
+_listSize_t                             _listGetSizeTerminatedList(void);
+_bool_t                                 _listIsEmptyTerminatedList(void);
+
+
+
 #endif /* RTOS_INCLUDE_LIST_H_ */

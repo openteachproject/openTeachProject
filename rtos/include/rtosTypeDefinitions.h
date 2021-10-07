@@ -134,6 +134,8 @@ enum _threadState
     ThreadStateRunning                      = 0,
     ThreadStateReady                        = 1,
     ThreadStateWaited                       = 2,
+    ThreadStateSuspended                    = 3,
+    ThreadStateTerminated                   = 4,
     ThreadStateError                        = 0xFFFFFFFF
 };
 
@@ -183,6 +185,10 @@ typedef circularQueueNode_t                 _kernelReadyNode_t;
 typedef queue_t                             _kernelWaitList_t;
 typedef queueNode_t                         _kernelWaitNode_t;
 typedef uint32_t                            _kernelWaitListNumber_t;
+typedef queue_t                             _kernelSuspendedList_t;
+typedef queueNode_t                         _kernelSuspendedNode_t;
+typedef queue_t                             _kernelTerminatedList_t;
+typedef queueNode_t                         _kernelTerminatedNode_t;
 typedef enum _kernelRequest                 _kernelRequest_t;
 typedef enum _status                        _status_t;
 typedef bool                                _bool_t;
@@ -251,6 +257,8 @@ struct _kernelControlBlock {
     _kernelSystemCallListIndex_t            systemCallListIndex;
     _kernelReadyList_t                      *readyList[NumberOfPriorityLevels];
     _kernelWaitList_t                       *waitList[NumberOfWaitLists];
+    _kernelSuspendedList_t                  *suspendedList;
+    _kernelTerminatedList_t                 *terminatedList;
     _kernelRequest_t                        systemCallHandlerRequest;
     _kernelRequest_t                        contextSwitchRequest;
     _kernelRequest_t                        waitListHandlerRequest;
@@ -271,6 +279,8 @@ struct _threadControlBlock {
     _kernelReadyNode_t                      *readyNode;
     _kernelWaitNode_t                       *waitNode;
     _kernelTick_t                           returnTick;
+    _kernelSuspendedNode_t                  *suspendedNode;
+    _kernelTerminatedNode_t                 *terminatedNode;
     _semaphoreWaitNode_t                    *semaphoreWaitNode;
     _semaphoreId_t                          semaphoreWaitingFor;
     _mutexWaitNode_t                        *mutexWaitNode;
