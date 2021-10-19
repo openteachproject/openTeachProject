@@ -47,8 +47,8 @@
 
 
 #define KernelMajorVersion                  1
-#define KernelMinorVersion                  0
-#define KernelPatchVersion                  1
+#define KernelMinorVersion                  1
+#define KernelPatchVersion                  0
 
 #define SystemCallListLength                4
 
@@ -58,6 +58,10 @@
 
 #define ThreadDefaultStackSize              1024
 #define ThreadMaximumStackSize              32 * 1024
+
+#define InterruptRequestArrayLength         InterruptRequestElementLength * InterruptRequestElementCount
+#define InterruptRequestElementLength       8
+#define InterruptRequestElementCount        8
 
 #define SemaphoreNameMaxLength              32
 
@@ -180,6 +184,8 @@ typedef uint64_t                            _kernelTick_t;
 typedef struct _kernelSystemCallArg         _kernelSystemCallArg_t;
 typedef uint32_t                            _kernelSystemCallListIndex_t;
 typedef uint32_t                            _kernelSystemCallNumber_t;
+typedef uint32_t                            _kernelInterruptRequest_t;
+typedef uint32_t                            _kernelInterruptRequestIndex_t;
 typedef circularQueue_t                     _kernelReadyList_t;
 typedef circularQueueNode_t                 _kernelReadyNode_t;
 typedef queue_t                             _kernelWaitList_t;
@@ -219,7 +225,7 @@ typedef queueNode_t                         _threadOwnedMutexNode_t;
 typedef struct _semaphoreControlBlock       _semaphoreControlBlock_t;
 typedef void*                               _semaphoreId_t;
 typedef char*                               _semaphoreName_t;
-typedef uint32_t                            _semaphoreCount_t;
+typedef int32_t                             _semaphoreCount_t;
 typedef binaryTree_t                        _semaphoreWaitList_t;
 typedef binaryTreeNode_t                    _semaphoreWaitNode_t;
 
@@ -255,6 +261,8 @@ struct _kernelControlBlock {
     _threadId_t                             currentRunningThreadId;
     _kernelSystemCallArg_t                  **systemCallList;
     _kernelSystemCallListIndex_t            systemCallListIndex;
+    _kernelInterruptRequest_t               *interruptRequestArray;
+    _kernelInterruptRequestIndex_t          interruptRequestIndex;
     _kernelReadyList_t                      *readyList[NumberOfPriorityLevels];
     _kernelWaitList_t                       *waitList[NumberOfWaitLists];
     _kernelSuspendedList_t                  *suspendedList;

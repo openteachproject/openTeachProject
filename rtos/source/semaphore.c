@@ -35,6 +35,14 @@
 
 
 
+static _rtosStatus_t semaphoreGetFromInterrupt(_semaphoreId_t id);
+
+
+
+static _rtosStatus_t semaphoreReleaseFromInterrupt(_semaphoreId_t id);
+
+
+
 semaphoreName_t semaphoreGetName(semaphoreId_t id) {
 
     _semaphoreName_t                    returnValue;
@@ -197,7 +205,7 @@ void _semaphoreCreateNewSystemCall(_semaphoreCreateNewArg_t *arg) {
 
 rtosStatus_t semaphoreDelete(semaphoreId_t id) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _semaphoreDeleteArg_t               semaphoreDeleteArg;
 
@@ -230,7 +238,7 @@ rtosStatus_t semaphoreDelete(semaphoreId_t id) {
 
 void _semaphoreDeleteSystemCall(_semaphoreDeleteArg_t *arg) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _semaphoreControlBlock_t            *semaphore;
     _semaphoreId_t                      semaphoreId;
     _listSize_t                         listSize;
@@ -281,7 +289,7 @@ void _semaphoreDeleteSystemCall(_semaphoreDeleteArg_t *arg) {
 
 rtosStatus_t semaphoreGet(semaphoreId_t id, kernelTick_t timeOut) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _semaphoreGetArg_t                  semaphoreGetArg;
     _threadControlBlock_t               *semaphoreCaller;
@@ -294,7 +302,7 @@ rtosStatus_t semaphoreGet(semaphoreId_t id, kernelTick_t timeOut) {
 
         if (_kernelIsInInterrupt()) {
 
-            returnValue = StatusErrorInerrupt;
+            returnValue = semaphoreGetFromInterrupt(id);
         }
         else {
 
@@ -337,7 +345,7 @@ rtosStatus_t semaphoreGet(semaphoreId_t id, kernelTick_t timeOut) {
 
 void _semaphoreGetSystemCall(_semaphoreGetArg_t *arg) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _semaphoreControlBlock_t            *semaphore;
     _semaphoreId_t                      semaphoreId;
     _semaphoreCount_t                   semaphoreCount;
@@ -347,48 +355,69 @@ void _semaphoreGetSystemCall(_semaphoreGetArg_t *arg) {
     _kernelTick_t                       currentTick;
     _kernelTick_t                       timeOut;
     _kernelWaitListNumber_t             waitListNumber;
+    _atomicResult_t                     result;
 
     semaphoreId = arg -> semaphoreIdArg;
     semaphore = (_semaphoreControlBlock_t*)semaphoreId;
-    semaphoreCount = semaphore -> count;
     timeOut = arg -> timeOutArg;
     semaphoreCallerId = arg -> semaphoreCallerIdArg;
     semaphoreCaller = (_threadControlBlock_t*)semaphoreCallerId;
 
-    if (semaphoreCount > 0) {
+    while(true) {
 
-        semaphoreCount--;
-        returnValue = StatusOk;
-    }
-    else {
-        if (timeOut == 0) {
+        semaphoreCount = _kernelAtomicRead32((_atomicAddress_t)(&(semaphore -> count)));
 
-            returnValue = StatusErrorResource;
+        if (semaphoreCount > 0) {
+
+            semaphoreCount--;
+            result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)(&(semaphore -> count)));
+
+            if (result == AtomicWriteSuccessfull) {
+
+                returnValue = StatusOk;
+
+                break;
+            }
         }
         else {
 
-            _listInsertToSemaphoreWaitList(semaphoreId, semaphoreCallerId);
-            semaphoreCaller -> semaphoreWaitingFor = semaphoreId;
+            if (timeOut == 0) {
 
-            currentTick = _kernelGetTick();
-            returnTick = currentTick + timeOut;
-            waitListNumber = returnTick % NumberOfWaitLists;
-
-            semaphoreCaller -> returnTick = returnTick;
-
-            _listDeleteFromReadyList(semaphoreCallerId);
-
-            _listInsertToWaitList(semaphoreCallerId, waitListNumber);
-            semaphoreCaller -> state = ThreadStateWaited;
-
-            semaphoreCaller -> returnedByRelease = ReturnedByReleaseUnset;
-
-            if (_kernelCheckForContextSwitchAfterDelete(semaphoreCallerId)) {
-
-                _kernelContextSwitchRequest();
+                returnValue = StatusErrorResource;
             }
+            else {
 
-            returnValue = StatusWait;
+                semaphoreCount--;
+                result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)(&(semaphore -> count)));
+
+                if (result == AtomicWriteSuccessfull) {
+
+                    _listInsertToSemaphoreWaitList(semaphoreId, semaphoreCallerId);
+                    semaphoreCaller -> semaphoreWaitingFor = semaphoreId;
+
+                    currentTick = _kernelGetTick();
+                    returnTick = currentTick + timeOut;
+                    waitListNumber = returnTick % NumberOfWaitLists;
+
+                    semaphoreCaller -> returnTick = returnTick;
+
+                    _listDeleteFromReadyList(semaphoreCallerId);
+
+                    _listInsertToWaitList(semaphoreCallerId, waitListNumber);
+                    semaphoreCaller -> state = ThreadStateWaited;
+
+                    semaphoreCaller -> returnedByRelease = ReturnedByReleaseUnset;
+
+                    if (_kernelCheckForContextSwitchAfterDelete(semaphoreCallerId)) {
+
+                        _kernelContextSwitchRequest();
+                    }
+
+                    returnValue = StatusWait;
+
+                    break;
+                }
+            }
         }
     }
 
@@ -396,11 +425,52 @@ void _semaphoreGetSystemCall(_semaphoreGetArg_t *arg) {
     return;
 }
 
+static _rtosStatus_t semaphoreGetFromInterrupt(_semaphoreId_t id) {
+
+    _rtosStatus_t                            returnValue;
+    _semaphoreControlBlock_t                 *semaphore;
+    _semaphoreCount_t                        semaphoreCount;
+    _atomicResult_t                          result;
+
+    semaphore = (_semaphoreControlBlock_t*)id;
+
+    while(true) {
+
+        semaphoreCount = _kernelAtomicRead32((_atomicAddress_t)(&(semaphore -> count)));
+
+        if (semaphoreCount > 0) {
+
+            semaphoreCount--;
+            result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)(&(semaphore -> count)));
+
+            if (result == AtomicWriteSuccessfull) {
+
+                returnValue = StatusOk;
+
+                break;
+            }
+        }
+        else {
+
+            result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)(&(semaphore -> count)));
+
+            if (result == AtomicWriteSuccessfull) {
+
+                returnValue = StatusErrorResource;
+
+                break;
+            }
+        }
+    }
+
+    return returnValue;
+}
+
 
 
 rtosStatus_t semaphoreRelease(semaphoreId_t id) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _semaphoreReleaseArg_t              semaphoreReleaseArg;
 
@@ -411,7 +481,7 @@ rtosStatus_t semaphoreRelease(semaphoreId_t id) {
 
         if (_kernelIsInInterrupt()) {
 
-            returnValue = StatusErrorInerrupt;
+            returnValue = semaphoreReleaseFromInterrupt(id);
         }
         else {
 
@@ -433,66 +503,190 @@ rtosStatus_t semaphoreRelease(semaphoreId_t id) {
 
 void _semaphoreReleaseSystemCall(_semaphoreReleaseArg_t *arg) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _semaphoreControlBlock_t            *semaphore;
     _semaphoreId_t                      semaphoreId;
     _semaphoreCount_t                   semaphoreCount;
     _threadControlBlock_t               *waitThread;
     _threadId_t                         waitThreadId;
     _kernelWaitListNumber_t             waitListNumber;
+    _atomicResult_t                     result;
 
     semaphoreId = arg -> semaphoreIdArg;
     semaphore = (_semaphoreControlBlock_t*)semaphoreId;
-    semaphoreCount = semaphore -> count;
 
-    if (semaphoreCount == 0) {
+    while(true) {
 
-        if (_listIsEmptySemaphoreWaitList(semaphoreId)) {
+        semaphoreCount = _kernelAtomicRead32((_atomicAddress_t)(&(semaphore -> count)));
 
-            semaphoreCount++;
-            semaphore -> count = semaphoreCount;
-            returnValue = StatusOk;
-        }
-        else {
+        if (semaphoreCount >= 0) {
 
-            waitThreadId = _listGetMaxSemaphoreWaitList(semaphoreId);
-            waitThread = (_threadControlBlock_t*)waitThreadId;
+            if (semaphoreCount < (semaphore -> maxCount)) {
 
-            _listDeleteFromSemaphoreWaitList(semaphoreId, waitThreadId);
+                semaphoreCount++;
+                result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)(&(semaphore -> count)));
 
-            waitThread -> semaphoreWaitingFor = NULL;
+                if (result == AtomicWriteSuccessfull) {
 
-            waitListNumber = (waitThread -> returnTick) % NumberOfWaitLists;
-            waitThread -> returnTick = 0;
-            _listDeleteFromWaitList(waitThreadId, waitListNumber);
+                    returnValue = StatusOk;
 
-            _listInsertToReadyList(waitThreadId);
-            waitThread -> state = ThreadStateReady;
-            waitThread -> returnedByRelease = ReturnedByReleaseSet;
-
-            if (_kernelCheckForContextSwitchAfterInsert(waitThreadId)) {
-
-                _kernelContextSwitchRequest();
+                    break;
+                }
             }
+            else {
 
-            returnValue = StatusOk;
-        }
-    }
-    else {
+                result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)(&(semaphore -> count)));
 
-        if (semaphoreCount == semaphore -> maxCount) {
-            returnValue = StatusErrorResource;
+                if (result == AtomicWriteSuccessfull) {
+
+                    returnValue = StatusErrorResource;
+
+                    break;
+                }
+            }
         }
         else {
 
             semaphoreCount++;
-            semaphore -> count = semaphoreCount;
-            returnValue = StatusOk;
-        }
+            result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)(&(semaphore -> count)));
 
+            if (result == AtomicWriteSuccessfull) {
+
+                waitThreadId = _listGetMaxSemaphoreWaitList(semaphoreId);
+                waitThread = (_threadControlBlock_t*)waitThreadId;
+
+                _listDeleteFromSemaphoreWaitList(semaphoreId, waitThreadId);
+
+                waitThread -> semaphoreWaitingFor = NULL;
+
+                waitListNumber = (waitThread -> returnTick) % NumberOfWaitLists;
+                waitThread -> returnTick = 0;
+                _listDeleteFromWaitList(waitThreadId, waitListNumber);
+
+                _listInsertToReadyList(waitThreadId);
+                waitThread -> state = ThreadStateReady;
+                waitThread -> returnedByRelease = ReturnedByReleaseSet;
+
+                if (_kernelCheckForContextSwitchAfterInsert(waitThreadId)) {
+
+                    _kernelContextSwitchRequest();
+                }
+
+                returnValue = StatusOk;
+
+                break;
+            }
+        }
     }
 
     arg -> returnValue = returnValue;
+    return;
+}
+
+
+
+static _rtosStatus_t semaphoreReleaseFromInterrupt(_semaphoreId_t id) {
+
+    _rtosStatus_t                            returnValue;
+    _semaphoreControlBlock_t                 *semaphore;
+    _semaphoreCount_t                        semaphoreCount;
+    _atomicResult_t                          result;
+    _kernelInterruptRequest_t                *interruptRequestMemory;
+
+    semaphore = (_semaphoreControlBlock_t*)id;
+
+    while(true) {
+
+        semaphoreCount = _kernelAtomicRead32((_atomicAddress_t)(&(semaphore -> count)));
+
+        if (semaphoreCount >= 0) {
+
+            if (semaphoreCount < (semaphore -> maxCount)) {
+
+                semaphoreCount++;
+                result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)(&(semaphore -> count)));
+
+                if (result == AtomicWriteSuccessfull) {
+
+                    returnValue = StatusOk;
+
+                    break;
+                }
+            }
+            else {
+
+                result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)(&(semaphore -> count)));
+
+                if (result == AtomicWriteSuccessfull) {
+
+                    returnValue = StatusErrorResource;
+
+                    break;
+                }
+            }
+        }
+        else {
+
+            semaphoreCount++;
+            result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)(&(semaphore -> count)));
+
+            if (result == AtomicWriteSuccessfull) {
+
+                interruptRequestMemory = _kernelInterruptRequestAlloc();
+
+                *(interruptRequestMemory + 2) = (_kernelInterruptRequest_t)id;
+
+                *(interruptRequestMemory + 0) = (_kernelInterruptRequest_t)SemaphoreReleaseFromInterruptSystemCallNumber;
+                *(interruptRequestMemory + 1) = (_kernelInterruptRequest_t)(interruptRequestMemory + 2);
+
+                _kernelSystemCall((_kernelSystemCallArg_t*)interruptRequestMemory);
+
+                returnValue = StatusOk;
+
+                break;
+            }
+        }
+    }
+
+    return returnValue;
+}
+
+
+
+void _semaphoreReleaseFromInterruptSystemCall(_semaphoreReleaseFromInterruptArg_t *arg) {
+
+    _semaphoreId_t                      semaphoreId;
+    _threadControlBlock_t               *waitThread;
+    _threadId_t                         waitThreadId;
+    _kernelWaitListNumber_t             waitListNumber;
+    _kernelInterruptRequest_t           *interruptRequestPointer;
+
+    semaphoreId = arg -> semaphoreIdArg;
+
+    interruptRequestPointer = ((_kernelInterruptRequest_t*)arg) - 2;
+
+    _kernelInterruptRequestFree((_kernelInterruptRequest_t*)(interruptRequestPointer));
+
+    waitThreadId = _listGetMaxSemaphoreWaitList(semaphoreId);
+    waitThread = (_threadControlBlock_t*)waitThreadId;
+
+    _listDeleteFromSemaphoreWaitList(semaphoreId, waitThreadId);
+
+    waitThread -> semaphoreWaitingFor = NULL;
+
+    waitListNumber = (waitThread -> returnTick) % NumberOfWaitLists;
+    waitThread -> returnTick = 0;
+    _listDeleteFromWaitList(waitThreadId, waitListNumber);
+
+    _listInsertToReadyList(waitThreadId);
+    waitThread -> state = ThreadStateReady;
+    waitThread -> returnedByRelease = ReturnedByReleaseSet;
+
+    if (_kernelCheckForContextSwitchAfterInsert(waitThreadId)) {
+
+        _kernelContextSwitchRequest();
+    }
+
     return;
 }
 

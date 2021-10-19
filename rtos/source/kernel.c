@@ -52,15 +52,22 @@ _rtosStatus_t _kernelSystemCall(_kernelSystemCallArg_t *systemCallArg) {
 
     kernel = _kernelGetKernelControlBlock();
     systemCallList = kernel -> systemCallList;
+
     while(true) {
+
         index = _kernelAtomicRead32(&(kernel -> systemCallListIndex));
+
         if (systemCallList[index] == NULL) {
+
             result = _kernelAtomicWrite32((_atomicValue_t)systemCallArg, (_atomicAddress_t)(&systemCallList[index]));
+
             if (result == AtomicWriteSuccessfull) {
+
                 break;
             }
         }
         else {
+
             index++;
             _kernelAtomicWrite32(index, &(kernel -> systemCallListIndex));
         }
@@ -74,30 +81,47 @@ _rtosStatus_t _kernelSystemCall(_kernelSystemCallArg_t *systemCallArg) {
 _rtosStatus_t _kernelSystemCallHandler(void) {
 
     _kernelControlBlock_t               *kernel;
-    _kernelSystemCallArg_t              *systemCallArg;
-    _kernelSystemCallArg_t              **systemCallList;
-    _kernelSystemCallListIndex_t        systemCallListIndex;
     _kernelSystemCallListIndex_t        index;
+    _kernelSystemCallArg_t              **systemCallList;
+    _kernelSystemCallArg_t              *systemCallArg;
+    _atomicResult_t                     result;
 
     kernel = _kernelGetKernelControlBlock();
     systemCallList = kernel -> systemCallList;
-    systemCallListIndex = kernel -> systemCallListIndex;
+    while(true) {
 
-    for (index = 0 ; index <= systemCallListIndex ; index++) {
+        index = _kernelAtomicRead32(&(kernel -> systemCallListIndex));
 
-        systemCallArg = systemCallList[index];
+        if (index >= 0 && systemCallList[index] != NULL) {
 
-        if (systemCallArg != NULL) {
+            systemCallArg = systemCallList[index];
+            result = _kernelAtomicWrite32((_atomicValue_t)NULL, (_atomicAddress_t)(&systemCallList[index]));
 
-            _kernelSystemCallByNumber(systemCallArg);
+            if (result == AtomicWriteSuccessfull) {
 
-            systemCallList[index] = NULL;
+                _kernelSystemCallByNumber(systemCallArg);
+            }
+        }
+        else if (index > 0 && systemCallList[index] == NULL) {
+
+            index--;
+            _kernelAtomicWrite32(index, &(kernel -> systemCallListIndex));
+        }
+        else if (index == 0 && systemCallList[index] == NULL) {
+
+            result = _kernelAtomicWrite32(KernelRequestUnSet, (_atomicAddress_t)(&kernel -> systemCallHandlerRequest));
+
+            if (result == AtomicWriteSuccessfull) {
+                break;
+            }
+        }
+        else {
+
+            //Program will not touch this block
         }
     }
 
-    kernel -> systemCallListIndex = 0;
-
-    return StatusOk;;
+    return StatusOk;
 }
 
 _rtosStatus_t _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg) {
@@ -160,6 +184,9 @@ _rtosStatus_t _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg) {
             break;
         case SemaphoreReleaseSystemCallNumber:
             _semaphoreReleaseSystemCall(specificSystemCallArg);
+            break;
+        case SemaphoreReleaseFromInterruptSystemCallNumber:
+            _semaphoreReleaseFromInterruptSystemCall(specificSystemCallArg);
             break;
 
 
@@ -252,6 +279,10 @@ _rtosStatus_t _kernelWaitListHandler(void) {
     _threadId_t                         threadId;
     _threadId_t                         nextThreadId;
     _kernelTick_t                       returnTick;
+    _semaphoreControlBlock_t            *semaphore;
+    _semaphoreId_t                      semaphoreId;
+    _semaphoreCount_t                   semaphoreCount;
+    _atomicResult_t                     result;
 
     currentTick = _kernelGetTick();
     waitListNumber = currentTick % NumberOfWaitLists;
@@ -270,33 +301,76 @@ _rtosStatus_t _kernelWaitListHandler(void) {
             if (currentTick == returnTick) {
 
                 if (thread -> semaphoreWaitingFor != NULL) {
-                    _listDeleteFromSemaphoreWaitList(thread -> semaphoreWaitingFor, threadId);
-                    thread -> semaphoreWaitingFor = NULL;
 
+                    semaphoreId = thread -> semaphoreWaitingFor;
+                    semaphore = (_semaphoreControlBlock_t*)semaphoreId;
+
+                    while(true) {
+
+                        semaphoreCount = (_semaphoreCount_t)_kernelAtomicRead32((_atomicAddress_t)&(semaphore -> count));
+
+                        if (semaphoreCount < 0) {
+
+                            semaphoreCount++;
+                            result = _kernelAtomicWrite32((_atomicValue_t)semaphoreCount, (_atomicAddress_t)&(semaphore -> count));
+
+                            if (result == AtomicWriteSuccessfull) {
+
+                                nextThreadId = _listGetNextWaitList(waitListNumber, threadId);
+                                _listDeleteFromWaitList(threadId, waitListNumber);
+                                thread -> returnTick = 0;
+
+                                _listInsertToReadyList(threadId);
+                                thread -> state = ThreadStateReady;
+
+                                if (_kernelCheckForContextSwitchAfterInsert(threadId) == true) {
+
+                                    _kernelContextSwitchRequest();
+                                }
+
+                                break;
+                            }
+                        }
+                    }
                 }
                 else if (thread -> mutexWaitingFor != NULL) {
+
                     _listDeleteFromMutexWaitList(thread -> mutexWaitingFor, threadId);
                     thread -> mutexWaitingFor = NULL;
+
+                    nextThreadId = _listGetNextWaitList(waitListNumber, threadId);
+                    _listDeleteFromWaitList(threadId, waitListNumber);
+                    thread -> returnTick = 0;
+
+                    _listInsertToReadyList(threadId);
+                    thread -> state = ThreadStateReady;
+
+                    if (_kernelCheckForContextSwitchAfterInsert(threadId) == true) {
+
+                        _kernelContextSwitchRequest();
+                    }
                 }
                 else {
-                    //Thread has not waited for a resource
-                }
 
-                nextThreadId = _listGetNextWaitList(waitListNumber, threadId);
-                _listDeleteFromWaitList(threadId, waitListNumber);
-                thread -> returnTick = 0;
+                    nextThreadId = _listGetNextWaitList(waitListNumber, threadId);
+                    _listDeleteFromWaitList(threadId, waitListNumber);
+                    thread -> returnTick = 0;
 
-                _listInsertToReadyList(threadId);
-                thread -> state = ThreadStateReady;
+                    _listInsertToReadyList(threadId);
+                    thread -> state = ThreadStateReady;
 
-                if (_kernelCheckForContextSwitchAfterInsert(threadId) == true) {
-                    _kernelContextSwitchRequest();
+                    if (_kernelCheckForContextSwitchAfterInsert(threadId) == true) {
+
+                        _kernelContextSwitchRequest();
+                    }
                 }
 
             }
             else {
+
                 nextThreadId = _listGetNextWaitList(waitListNumber, threadId);
             }
+
             threadId = nextThreadId;
         }
     }
@@ -306,7 +380,7 @@ _rtosStatus_t _kernelWaitListHandler(void) {
 
 _rtosStatus_t _kernelInitialize(void) {
 
-	_rtosStatus_t                       returnValue = StatusOk;
+    _rtosStatus_t                       returnValue = StatusOk;
     _kernelControlBlock_t               *kernel;
     _kernelVersion_t                    kernelVersion;
 
@@ -345,6 +419,12 @@ _rtosStatus_t _kernelInitialize(void) {
         }
         kernel -> systemCallListIndex = 0;
 
+        returnValue = _kernelInterruptRequestArrayInitialize();
+        if (returnValue != StatusOk) {
+            break;
+        }
+        kernel -> interruptRequestIndex = 0;
+
         returnValue = _kernelReadyListInitialize();
         if (returnValue != StatusOk) {
             break;
@@ -373,6 +453,8 @@ _rtosStatus_t _kernelInitialize(void) {
             free(kernel -> systemCallList[index]);
         }
 
+        free(kernel -> interruptRequestArray);
+
         for(_listSize_t index = 0 ; index < NumberOfPriorityLevels ; index++) {
             free(kernel -> readyList[index]);
         }
@@ -392,7 +474,7 @@ _rtosStatus_t _kernelInitialize(void) {
 }
 _rtosStatus_t _kernelStart(void) {
 
-	_rtosStatus_t                        returnValue;
+    _rtosStatus_t                        returnValue;
     _threadControlBlock_t                *firstThread;
     _threadId_t                          firstThreadId;
     _threadPriority_t                    priority;
@@ -612,7 +694,7 @@ _threadFunctionParameter_t _kernelGetCurrentRunningThreadFunctionParameter(void)
 
 _rtosStatus_t _kernelSystemCallListInitialize(void) {
 
-	_rtosStatus_t                        returnValue = StatusOk;
+    _rtosStatus_t                        returnValue = StatusOk;
     _kernelControlBlock_t                *kernel;
 
     kernel = _kernelGetKernelControlBlock();
@@ -623,11 +705,14 @@ _rtosStatus_t _kernelSystemCallListInitialize(void) {
      * unsuccessful delete all of allocated memories.
      * */
     kernel -> systemCallList = (_kernelSystemCallArg_t**)malloc(SystemCallListLength * sizeof(_kernelSystemCallArg_t*));
+
     if(kernel -> systemCallList == NULL) {
+
         returnValue = StatusErrorHeapMemory;
     }
     else {
         for(uint32_t i = 0 ; i < SystemCallListLength ; i++) {
+
             kernel -> systemCallList[i] = NULL;
         }
     }
@@ -637,9 +722,38 @@ _rtosStatus_t _kernelSystemCallListInitialize(void) {
     return returnValue;
 }
 
+_rtosStatus_t _kernelInterruptRequestArrayInitialize(void) {
+
+    _rtosStatus_t                        returnValue;
+    _kernelControlBlock_t                *kernel;
+    _kernelInterruptRequest_t            *interruptRequestArray;
+
+    kernel = _kernelGetKernelControlBlock();
+
+    interruptRequestArray = (_kernelInterruptRequest_t*)malloc(InterruptRequestArrayLength * sizeof(_kernelInterruptRequest_t));
+
+    if (interruptRequestArray == NULL) {
+
+        returnValue = StatusErrorHeapMemory;
+    }
+    else {
+
+        for (uint32_t index = 0; index < InterruptRequestArrayLength; index++) {
+
+            interruptRequestArray[index] = 0;
+        }
+
+        kernel -> interruptRequestArray = interruptRequestArray;
+
+        returnValue = StatusOk;
+    }
+
+    return returnValue;
+}
+
 _rtosStatus_t _kernelReadyListInitialize(void) {
 
-	_rtosStatus_t                        returnValue;
+    _rtosStatus_t                        returnValue;
     _kernelControlBlock_t                *kernel;
     _kernelReadyList_t                   *list;
 
@@ -673,7 +787,7 @@ _rtosStatus_t _kernelReadyListInitialize(void) {
 }
 
 _rtosStatus_t _kernelWaitListInitialize(void) {
-	_rtosStatus_t                        returnValue;
+    _rtosStatus_t                        returnValue;
     _kernelControlBlock_t                *kernel;
     _kernelWaitList_t                    *list;
 
@@ -708,7 +822,7 @@ _rtosStatus_t _kernelWaitListInitialize(void) {
 
 _rtosStatus_t _kernelSuspendedListInitialize(void) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _kernelControlBlock_t               *kernel;
     _kernelSuspendedList_t              *list;
 
@@ -730,7 +844,7 @@ _rtosStatus_t _kernelSuspendedListInitialize(void) {
 
 _rtosStatus_t _kernelTerminatedListInitialize(void) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _kernelControlBlock_t               *kernel;
     _kernelTerminatedList_t             *list;
 
@@ -754,7 +868,12 @@ _rtosStatus_t _kernelSystemCallRequest(void) {
 
     _kernelSetSystemCallRequest();
 
-    _portSupervisorInterruptTrigger();
+    if (_kernelIsInInterrupt()) {
+        _portPreSupervisorInterruptTrigger();
+    }
+    else {
+        _portSupervisorInterruptTrigger();
+    }
 
     return StatusOk;
 }
@@ -855,6 +974,78 @@ _rtosStatus_t _kernelUnsetWaitListHandlerReuest(void) {
     kernel = _kernelGetKernelControlBlock();
     kernel -> waitListHandlerRequest = KernelRequestUnSet;
     return StatusOk;
+}
+
+_kernelInterruptRequest_t *_kernelInterruptRequestAlloc(void) {
+
+    _kernelInterruptRequest_t            *returnValue;
+    _kernelControlBlock_t                *kernel;
+    _kernelInterruptRequestIndex_t       index;
+    _atomicResult_t                      result;
+
+    kernel = _kernelGetKernelControlBlock();
+
+    for(uint32_t i = 0 ; i < InterruptRequestElementCount ; i++) {
+
+        index = _kernelAtomicRead32((_atomicAddress_t)(&(kernel -> interruptRequestIndex)));
+
+        if ((kernel -> interruptRequestArray)[index * InterruptRequestElementLength] == 0) {
+
+            result = _kernelAtomicWrite32((_atomicValue_t)1, (_atomicAddress_t)(&((kernel -> interruptRequestArray)[index * InterruptRequestElementLength])));
+
+            if (result == AtomicWriteSuccessfull) {
+
+                returnValue = &((kernel -> interruptRequestArray)[(index * InterruptRequestElementLength) + 1]);
+
+                break;
+            }
+            else {
+
+                i--;
+            }
+        }
+        else {
+
+            index = (index + 1) % InterruptRequestElementCount;
+
+            result = _kernelAtomicWrite32((_atomicValue_t)index, (_atomicAddress_t)(&(kernel -> interruptRequestIndex)));
+
+            if (result == AtomicWriteUnsuccessfull) {
+
+                i--;
+            }
+        }
+    }
+
+    return returnValue;
+}
+
+_rtosStatus_t _kernelInterruptRequestFree(_kernelInterruptRequest_t *pointer) {
+
+    _rtosStatus_t                        returnValue = StatusOk;
+    _kernelInterruptRequest_t            lock;
+    _atomicResult_t                      result;
+
+    while(true) {
+
+        lock = _kernelAtomicRead32((_atomicAddress_t)(pointer - 1));
+
+        if (lock == 1) {
+
+            result = _kernelAtomicWrite32((_atomicValue_t)0, (_atomicAddress_t)(pointer - 1));
+
+            if (result == AtomicWriteSuccessfull) {
+
+                break;
+            }
+        }
+        else {
+
+            break;
+        }
+    }
+
+    return returnValue;
 }
 
 _bool_t _kernelIsInInterrupt(void) {

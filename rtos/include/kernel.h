@@ -75,6 +75,7 @@ _threadFunctionPointer_t                _kernelGetCurrentRunningThreadFunctionPo
 _threadFunctionParameter_t              _kernelGetCurrentRunningThreadFunctionParameter(void);
 
 _rtosStatus_t                           _kernelSystemCallListInitialize(void);
+_rtosStatus_t                           _kernelInterruptRequestArrayInitialize(void);
 _rtosStatus_t                           _kernelReadyListInitialize(void);
 _rtosStatus_t                           _kernelWaitListInitialize(void);
 _rtosStatus_t                           _kernelSuspendedListInitialize(void);
@@ -95,6 +96,9 @@ _rtosStatus_t                           _kernelUnsetContextSwitchReuest(void);
 _kernelRequest_t                        _kernelGetWaitListHandlerRequest(void);
 _rtosStatus_t                           _kernelSetWaitListHandlerRequest(void);
 _rtosStatus_t                           _kernelUnsetWaitListHandlerReuest(void);
+
+_kernelInterruptRequest_t              *_kernelInterruptRequestAlloc(void);
+_rtosStatus_t                           _kernelInterruptRequestFree(_kernelInterruptRequest_t *pointer);
 
 _bool_t                                 _kernelIsInInterrupt(void);
 

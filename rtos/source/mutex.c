@@ -207,7 +207,8 @@ void _mutexCreateNewSystemCall(_mutexCreateNewArg_t *arg) {
 
 
 rtosStatus_t mutexDelete(mutexId_t id) {
-	_rtosStatus_t                       returnValue;
+    
+    _rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _mutexDeleteArg_t                   mutexDeleteArg;
     _mutexControlBlock_t                *mutex;
@@ -244,7 +245,7 @@ rtosStatus_t mutexDelete(mutexId_t id) {
 
 void _mutexDeleteSystemCall(_mutexDeleteArg_t *arg) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _mutexControlBlock_t                *mutex;
     _mutexId_t                          mutexId;
 
@@ -273,7 +274,7 @@ void _mutexDeleteSystemCall(_mutexDeleteArg_t *arg) {
 
 rtosStatus_t mutexGet(mutexId_t id, kernelTick_t timeOut) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _mutexGetArg_t                      mutexGetArg;
     _threadId_t                         mutexCallerId;
@@ -333,7 +334,7 @@ rtosStatus_t mutexGet(mutexId_t id, kernelTick_t timeOut) {
 
 void _mutexGetSystemCall(_mutexGetArg_t *arg) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _mutexControlBlock_t                *mutex;
     _mutexId_t                          mutexId;
     _mutexLock_t                        mutexLock;
@@ -406,7 +407,7 @@ void _mutexGetSystemCall(_mutexGetArg_t *arg) {
 
 rtosStatus_t mutexRelease(mutexId_t id) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _kernelSystemCallArg_t              systemCallArg;
     _mutexReleaseArg_t                  mutexReleaseArg;
     _mutexControlBlock_t                *mutex;
@@ -443,7 +444,7 @@ rtosStatus_t mutexRelease(mutexId_t id) {
 
 void _mutexReleaseSystemCall(_mutexReleaseArg_t *arg) {
 
-	_rtosStatus_t                       returnValue;
+    _rtosStatus_t                       returnValue;
     _mutexControlBlock_t                *mutex;
     _mutexId_t                          mutexId;
     _mutexLock_t                        mutexLock;

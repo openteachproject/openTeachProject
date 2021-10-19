@@ -37,16 +37,16 @@ PendSV_Handler:
 
 
             PUSH                        {R0, LR}
-            B                           .LCheckForContextSwitchStart
+            B                           .LCheckForSystemCallStart
 
 
 
-.LCheckForContextSwitchStart:
-            BL                          _kernelGetContextSwitchRequest
+.LCheckForSystemCallStart:
+            BL                          _kernelGetSystemCallRequest
             SUBS                        R0, #1
             IT                          EQ
-            BEQ                         .LContextSwitch
-.LContextSwitchEnd:
+            BEQ                         .LSystemCall
+.LCheckForSystemCallEnd:
 
 
 
@@ -59,7 +59,28 @@ PendSV_Handler:
 
 
 
+.LCheckForContextSwitchStart:
+            BL                          _kernelGetContextSwitchRequest
+            SUBS                        R0, #1
+            IT                          EQ
+            BEQ                         .LContextSwitch
+.LContextSwitchEnd:
+
+
+
             B                           .LPendSvHandlerExit
+
+
+
+.LSystemCall:
+            BL                          _portSupervisorInterruptTrigger
+            B                           .LCheckForSystemCallEnd
+
+
+
+.LWatListHandler:
+            BL                          _portSupervisorInterruptTrigger
+            B                           .LCheckForWaitListHandlerEnd
 
 
 
@@ -76,12 +97,6 @@ PendSV_Handler:
             MSR                         PSP, R3
             BL                          _kernelUnsetContextSwitchReuest
             B                           .LContextSwitchEnd
-
-
-
-.LWatListHandler:
-            BL                          _portSupervisorInterruptTrigger
-            B                           .LCheckForWaitListHandlerEnd
 
 
 
