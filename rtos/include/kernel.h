@@ -108,6 +108,9 @@ _atomicValue_t                          _kernelAtomicRead32(_atomicAddress_t add
 _atomicResult_t                         _kernelAtomicWrite32(_atomicValue_t value, _atomicAddress_t address);
 _rtosStatus_t                           _kernelAtomicClear(void);
 
+_kernelStarted_t                        _kernelGetStartedValue(void);
+_rtosStatus_t                           _kernelSetStartedValue(_kernelStarted_t kernelStartedValue);
+
 
 
 #endif /* RTOS_INCLUDE_KERNEL_H_ */

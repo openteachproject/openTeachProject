@@ -48,7 +48,7 @@
 
 #define KernelMajorVersion                  1
 #define KernelMinorVersion                  1
-#define KernelPatchVersion                  0
+#define KernelPatchVersion                  1
 
 #define SystemCallListLength                4
 
@@ -173,6 +173,13 @@ enum _resourceState
     ResourceStateError                      = 0xFFFFFFFF
 };
 
+enum _kernelStarted
+{
+	kernelStartedFalse                     = 0,
+	kernelStartedTrue                      = 1,
+	kernelStartedError                     = 0xFFFFFFFF
+};
+
 
 
 typedef struct _kernelControlBlock          _kernelControlBlock_t;
@@ -205,6 +212,7 @@ typedef uint32_t*                           _atomicAddress_t;
 typedef enum _atomicResult                  _atomicResult_t;
 typedef enum _returnedByRelease             _returnedByRelease_t;
 typedef enum _resourceState                 _resourceState_t;
+typedef enum _kernelStarted                 _kernelStarted_t;
 
 
 

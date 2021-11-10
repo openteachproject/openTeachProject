@@ -36,6 +36,8 @@
 
 _kernelControlBlock_t                   *_kernelControlBlock;
 
+_kernelStarted_t                         _kernelStartedValue = kernelStartedFalse;
+
 
 
 _kernelControlBlock_t* _kernelGetKernelControlBlock(void) {
@@ -506,6 +508,8 @@ _rtosStatus_t _kernelStart(void) {
         _kernelSetState(KernelStateRunning);
 
         _portTickTimerStart();
+
+        _kernelSetStartedValue(kernelStartedTrue);
 
         _portStartFirstThread();
     }
@@ -1071,6 +1075,18 @@ _atomicResult_t _kernelAtomicWrite32(_atomicValue_t value, _atomicAddress_t addr
 _rtosStatus_t _kernelAtomicClear(void) {
 
     return _portAtomicClear();
+}
+
+_kernelStarted_t _kernelGetStartedValue(void) {
+
+	return _kernelStartedValue;
+}
+
+_rtosStatus_t _kernelSetStartedValue(_kernelStarted_t kernelStartedValue) {
+
+	_kernelStartedValue = kernelStartedValue;
+
+	return StatusOk;
 }
 
 
