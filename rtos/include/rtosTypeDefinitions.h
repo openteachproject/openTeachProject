@@ -48,7 +48,7 @@
 
 #define KernelMajorVersion                  1
 #define KernelMinorVersion                  1
-#define KernelPatchVersion                  1
+#define KernelPatchVersion                  2
 
 #define SystemCallListLength                4
 

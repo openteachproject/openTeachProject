@@ -199,3 +199,38 @@ uint32_t _xpsrInitialValue(void) {
 
     return (0x01000000U);
 }
+
+#ifdef USE_HAL_DRIVER
+
+extern uint32_t SystemCoreClock;
+
+void HAL_Delay(uint32_t Delay) {
+
+	_kernelTick_t startTick, currentTick, lastTick;
+
+	if (_kernelGetStartedValue() == kernelStartedTrue) {
+
+		startTick = _kernelGetTick();
+
+		lastTick = startTick + (_kernelTick_t)Delay;
+
+		while(true) {
+
+			currentTick = _kernelGetTick();
+
+			if (currentTick > lastTick) {
+
+				break;
+			}
+		}
+	}
+	else {
+
+		for (uint32_t index = 0 ; index < ((SystemCoreClock / 1000) * Delay) ; index++) {
+
+			//Nop
+		}
+	}
+}
+
+#endif
