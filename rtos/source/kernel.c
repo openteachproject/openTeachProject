@@ -1079,14 +1079,13 @@ _rtosStatus_t _kernelAtomicClear(void) {
 
 _kernelStarted_t _kernelGetStartedValue(void) {
 
-	return _kernelStartedValue;
+    return _kernelStartedValue;
 }
 
 _rtosStatus_t _kernelSetStartedValue(_kernelStarted_t kernelStartedValue) {
 
-	_kernelStartedValue = kernelStartedValue;
+    _kernelStartedValue = kernelStartedValue;
 
-	return StatusOk;
+    return StatusOk;
 }
-
 

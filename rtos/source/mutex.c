@@ -102,7 +102,7 @@ mutexId_t mutexCreateNew(mutexName_t name, mutexType_t type) {
     else {
 
         mutexCreateNewArg . mutexNameArg = name;
-        mutexCreateNewArg . mutexTypeArg = MutexTypeSingleshot;
+        mutexCreateNewArg . mutexTypeArg = type;
 
         systemCallArg . systemCallNumber = MutexCreateNewSystemCallNumber;
         systemCallArg . specificSystemCallArg = &mutexCreateNewArg;
@@ -158,7 +158,7 @@ void _mutexCreateNewSystemCall(_mutexCreateNewArg_t *arg) {
 
         newMutex -> lock = MutexUnlocked;
 
-        newMutex -> type = MutexTypeSingleshot;
+        newMutex -> type = arg -> mutexTypeArg;
 
         newMutex -> owner = NULL;
 
@@ -338,6 +338,7 @@ void _mutexGetSystemCall(_mutexGetArg_t *arg) {
     _mutexControlBlock_t                *mutex;
     _mutexId_t                          mutexId;
     _mutexLock_t                        mutexLock;
+    _mutexType_t                        mutexType;
     _threadControlBlock_t               *mutexCaller;
     _threadId_t                         mutexCallerId;
     _kernelTick_t                       returnTick;
@@ -350,6 +351,7 @@ void _mutexGetSystemCall(_mutexGetArg_t *arg) {
     timeOut = arg -> timeOutArg;
     mutexCallerId = arg -> mutexCallerIdArg;
     mutexLock = mutex -> lock;
+    mutexType = mutex -> type;
 
     if (mutexLock == MutexUnlocked) {
 
@@ -361,11 +363,23 @@ void _mutexGetSystemCall(_mutexGetArg_t *arg) {
     else {
 
         if (mutex -> owner == mutexCallerId) {
-            returnValue = StatusOk;
+
+            if (mutexType == MutexTypeSingleshot) {
+
+                returnValue = StatusErrorResource;
+            }
+            else {
+
+                mutexLock++;
+                mutex -> lock = mutexLock;
+
+                returnValue = StatusOk;
+            }
         }
         else {
 
             if (timeOut == 0) {
+
                 returnValue = StatusErrorResource;
             }
             else {
@@ -449,6 +463,7 @@ void _mutexReleaseSystemCall(_mutexReleaseArg_t *arg) {
     _mutexId_t                          mutexId;
     _mutexLock_t                        mutexLock;
     _threadId_t                         mutexOwner;
+    _mutexType_t                        mutexType;
     _threadId_t                         mutexCallerId;
     _threadControlBlock_t               *waitThread;
     _threadId_t                         waitThreadId;
@@ -458,6 +473,7 @@ void _mutexReleaseSystemCall(_mutexReleaseArg_t *arg) {
     mutex = (_mutexControlBlock_t*)mutexId;
     mutexLock = mutex -> lock;
     mutexOwner = mutex -> owner;
+    mutexType = mutex -> type;
     mutexCallerId = arg -> mutexCallerIdArg;
 
     if (mutexLock == MutexUnlocked) {
@@ -467,42 +483,93 @@ void _mutexReleaseSystemCall(_mutexReleaseArg_t *arg) {
 
         if (mutexOwner == mutexCallerId) {
 
-            _listDeleteFromThreadOwnedMutexList(mutexCallerId, mutexId);
+            if (mutexType == MutexTypeSingleshot) {
 
-            if (_listIsEmptyMutexWaitList(mutexId)) {
-                mutex -> lock = MutexUnlocked;
-                mutex -> owner = NULL;
-                returnValue = StatusOk;
-            }
-            else {
+                _listDeleteFromThreadOwnedMutexList(mutexCallerId, mutexId);
 
-                waitThreadId = _listGetMaxMutexWaitList(mutexId);
-                waitThread = (_threadControlBlock_t*)waitThreadId;
-
-                _listInsertToThreadOwnedMutexList(waitThreadId, mutexId);
-                mutex -> owner = waitThreadId;
-
-                _listDeleteFromMutexWaitList(mutexId, waitThreadId);
-
-                waitThread -> mutexWaitingFor = NULL;
-
-                waitListNumber = (waitThread -> returnTick) % NumberOfWaitLists;
-                waitThread -> returnTick = 0;
-                _listDeleteFromWaitList(waitThreadId, waitListNumber);
-
-                _listInsertToReadyList(waitThreadId);
-                waitThread -> state = ThreadStateReady;
-                waitThread -> returnedByRelease = ReturnedByReleaseSet;
-
-                if (_kernelCheckForContextSwitchAfterInsert(waitThreadId)) {
-
-                    _kernelContextSwitchRequest();
+                if (_listIsEmptyMutexWaitList(mutexId)) {
+                    mutex -> lock = MutexUnlocked;
+                    mutex -> owner = NULL;
+                    returnValue = StatusOk;
                 }
+                else {
 
-                returnValue = StatusOk;
+                    waitThreadId = _listGetMaxMutexWaitList(mutexId);
+                    waitThread = (_threadControlBlock_t*)waitThreadId;
+
+                    _listInsertToThreadOwnedMutexList(waitThreadId, mutexId);
+                    mutex -> owner = waitThreadId;
+
+                    _listDeleteFromMutexWaitList(mutexId, waitThreadId);
+
+                    waitThread -> mutexWaitingFor = NULL;
+
+                    waitListNumber = (waitThread -> returnTick) % NumberOfWaitLists;
+                    waitThread -> returnTick = 0;
+                    _listDeleteFromWaitList(waitThreadId, waitListNumber);
+
+                    _listInsertToReadyList(waitThreadId);
+                    waitThread -> state = ThreadStateReady;
+                    waitThread -> returnedByRelease = ReturnedByReleaseSet;
+
+                    if (_kernelCheckForContextSwitchAfterInsert(waitThreadId)) {
+
+                        _kernelContextSwitchRequest();
+                    }
+
+                    returnValue = StatusOk;
+                }
+            }
+            else if (mutexType == MutexTypeRecursive) {
+
+                if (mutexLock == 1) {
+
+                    _listDeleteFromThreadOwnedMutexList(mutexCallerId, mutexId);
+
+                    if (_listIsEmptyMutexWaitList(mutexId)) {
+                        mutex -> lock = MutexUnlocked;
+                        mutex -> owner = NULL;
+                        returnValue = StatusOk;
+                    }
+                    else {
+
+                        waitThreadId = _listGetMaxMutexWaitList(mutexId);
+                        waitThread = (_threadControlBlock_t*)waitThreadId;
+
+                        _listInsertToThreadOwnedMutexList(waitThreadId, mutexId);
+                        mutex -> owner = waitThreadId;
+
+                        _listDeleteFromMutexWaitList(mutexId, waitThreadId);
+
+                        waitThread -> mutexWaitingFor = NULL;
+
+                        waitListNumber = (waitThread -> returnTick) % NumberOfWaitLists;
+                        waitThread -> returnTick = 0;
+                        _listDeleteFromWaitList(waitThreadId, waitListNumber);
+
+                        _listInsertToReadyList(waitThreadId);
+                        waitThread -> state = ThreadStateReady;
+                        waitThread -> returnedByRelease = ReturnedByReleaseSet;
+
+                        if (_kernelCheckForContextSwitchAfterInsert(waitThreadId)) {
+
+                            _kernelContextSwitchRequest();
+                        }
+
+                        returnValue = StatusOk;
+                    }
+                }
+                else if (mutexLock > 1) {
+
+                    mutexLock--;
+                    mutex -> lock = mutexLock;
+
+                    returnValue = StatusOk;
+                }
             }
         }
         else {
+
             returnValue = StatusErrorResource;
         }
     }

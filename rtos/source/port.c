@@ -206,31 +206,31 @@ extern uint32_t SystemCoreClock;
 
 void HAL_Delay(uint32_t Delay) {
 
-	_kernelTick_t startTick, currentTick, lastTick;
+    _kernelTick_t startTick, currentTick, lastTick;
 
-	if (_kernelGetStartedValue() == kernelStartedTrue) {
+    if (_kernelGetStartedValue() == kernelStartedTrue) {
 
-		startTick = _kernelGetTick();
+        startTick = _kernelGetTick();
 
-		lastTick = startTick + (_kernelTick_t)Delay;
+        lastTick = startTick + (_kernelTick_t)Delay;
 
-		while(true) {
+        while(true) {
 
-			currentTick = _kernelGetTick();
+            currentTick = _kernelGetTick();
 
-			if (currentTick > lastTick) {
+            if (currentTick > lastTick) {
 
-				break;
-			}
-		}
-	}
-	else {
+                break;
+            }
+        }
+    }
+    else {
 
-		for (uint32_t index = 0 ; index < ((SystemCoreClock / 1000) * Delay) ; index++) {
+        for (uint32_t index = 0 ; index < ((SystemCoreClock / 1000) * Delay) ; index++) {
 
-			//Nop
-		}
-	}
+            //Nop
+        }
+    }
 }
 
 #endif

@@ -47,8 +47,8 @@
 
 
 #define KernelMajorVersion                  1
-#define KernelMinorVersion                  1
-#define KernelPatchVersion                  2
+#define KernelMinorVersion                  2
+#define KernelPatchVersion                  0
 
 #define SystemCallListLength                4
 
@@ -175,9 +175,9 @@ enum _resourceState
 
 enum _kernelStarted
 {
-	kernelStartedFalse                     = 0,
-	kernelStartedTrue                      = 1,
-	kernelStartedError                     = 0xFFFFFFFF
+    kernelStartedFalse                     = 0,
+    kernelStartedTrue                      = 1,
+    kernelStartedError                     = 0xFFFFFFFF
 };
 
 

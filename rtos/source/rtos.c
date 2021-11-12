@@ -77,7 +77,9 @@ rtosStatus_t rtosInitialize(void) {
     _rtosStatus_t                       returnValue;
 
     returnValue = _kernelInitialize();
+
     rtosCreateIdleThread("IdleThread", idleThreadFunction, NULL, PriorityIdle, 256);
+
     return returnValue;
 }
 
