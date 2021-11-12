@@ -48,7 +48,7 @@
 
 #define KernelMajorVersion                  1
 #define KernelMinorVersion                  2
-#define KernelPatchVersion                  0
+#define KernelPatchVersion                  1
 
 #define SystemCallListLength                4
 
@@ -278,6 +278,7 @@ struct _kernelControlBlock {
     _kernelRequest_t                        systemCallHandlerRequest;
     _kernelRequest_t                        contextSwitchRequest;
     _kernelRequest_t                        waitListHandlerRequest;
+    _mutexId_t                              heapLockerMutexId;
 };
 
 

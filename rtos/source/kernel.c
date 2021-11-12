@@ -1089,3 +1089,22 @@ _rtosStatus_t _kernelSetStartedValue(_kernelStarted_t kernelStartedValue) {
     return StatusOk;
 }
 
+_mutexId_t _kernelGetHeapLockerMutex(void) {
+
+    _kernelControlBlock_t               *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    return kernel -> heapLockerMutexId;
+}
+
+_rtosStatus_t _kernelSetHeapLockerMutex(_mutexId_t heapLockerMutex) {
+
+    _kernelControlBlock_t               *kernel;
+
+    kernel = _kernelGetKernelControlBlock();
+    kernel -> heapLockerMutexId = heapLockerMutex;
+
+    return StatusOk;
+}
+
+

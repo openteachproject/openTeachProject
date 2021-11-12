@@ -111,6 +111,9 @@ _rtosStatus_t                           _kernelAtomicClear(void);
 _kernelStarted_t                        _kernelGetStartedValue(void);
 _rtosStatus_t                           _kernelSetStartedValue(_kernelStarted_t kernelStartedValue);
 
+_mutexId_t                              _kernelGetHeapLockerMutex(void);
+_rtosStatus_t                           _kernelSetHeapLockerMutex(_mutexId_t heapLockerMutex);
+
 
 
 #endif /* RTOS_INCLUDE_KERNEL_H_ */

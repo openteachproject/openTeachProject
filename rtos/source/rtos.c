@@ -75,10 +75,14 @@ static threadId_t rtosCreateIdleThread( threadName_t                name,
 rtosStatus_t rtosInitialize(void) {
 
     _rtosStatus_t                       returnValue;
+    _mutexId_t                          heapLockerMutex;
 
     returnValue = _kernelInitialize();
 
     rtosCreateIdleThread("IdleThread", idleThreadFunction, NULL, PriorityIdle, 256);
+
+    heapLockerMutex = mutexCreateNew("HeapLocker", MutexTypeRecursive);
+    _kernelSetHeapLockerMutex(heapLockerMutex);
 
     return returnValue;
 }
