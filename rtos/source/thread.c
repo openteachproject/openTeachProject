@@ -264,6 +264,8 @@ void _threadSetPrioritySystemCall(_threadSetPriorityArg_t *arg) {
             _listDeleteFromReadyList(threadId);
 
             thread -> priority = newPriority;
+            thread -> semaphoreWaitNode -> key = newPriority;
+            thread -> mutexWaitNode -> key = newPriority;
 
             _listInsertToReadyList(threadId);
 
@@ -323,6 +325,8 @@ void _threadSetPrioritySystemCall(_threadSetPriorityArg_t *arg) {
         else if (threadState == ThreadStateSuspended) {
 
             thread -> priority = newPriority;
+            thread -> semaphoreWaitNode -> key = newPriority;
+            thread -> mutexWaitNode -> key = newPriority;
 
             returnValue = StatusOk;
         }
