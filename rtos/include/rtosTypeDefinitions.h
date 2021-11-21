@@ -47,8 +47,8 @@
 
 
 #define KernelMajorVersion                  1
-#define KernelMinorVersion                  2
-#define KernelPatchVersion                  2
+#define KernelMinorVersion                  3
+#define KernelPatchVersion                  0
 
 #define SystemCallListLength                4
 
@@ -66,6 +66,8 @@
 #define SemaphoreNameMaxLength              32
 
 #define MutexNameMaxLength                  32
+
+#define MemPoolNameMaxLength                32
 
 
 
@@ -152,6 +154,13 @@ enum _returnedByRelease
     ReturnedByReleaseError                  = 0xFFFFFFFF
 };
 
+enum _returnedByFree
+{
+    ReturnedByFreeUnset                     = 0,
+    ReturnedByFreeSet                       = 1,
+    ReturnedByFreeError                     = 0xFFFFFFFF
+};
+
 enum _mutexLock
 {
     MutexUnlocked                           = 0,
@@ -171,6 +180,13 @@ enum _resourceState
     ResourceStateActive                     = 0,
     ResourceStateDeleted                    = 1,
     ResourceStateError                      = 0xFFFFFFFF
+};
+
+enum _memPoolLock
+{
+    MemPoolUnLocked                          = 0,
+    MemPoolLocked                           = 1,
+    MemPoolError                            = 0xFFFFFFFF
 };
 
 enum _kernelStarted
@@ -211,6 +227,7 @@ typedef uint32_t                            _atomicValue_t;
 typedef uint32_t*                           _atomicAddress_t;
 typedef enum _atomicResult                  _atomicResult_t;
 typedef enum _returnedByRelease             _returnedByRelease_t;
+typedef enum _returnedByFree                _returnedByFree_t;
 typedef enum _resourceState                 _resourceState_t;
 typedef enum _kernelStarted                 _kernelStarted_t;
 
@@ -246,6 +263,19 @@ typedef enum _mutexLock                     _mutexLock_t;
 typedef enum _mutexType                     _mutexType_t;
 typedef binaryTree_t                        _mutexWaitList_t;
 typedef binaryTreeNode_t                    _mutexWaitNode_t;
+
+
+
+typedef struct _memPoolControlBlock         _memPoolControlBlock_t;
+typedef void*                               _memPoolId_t;
+typedef char*                               _memPoolName_t;
+typedef uint32_t                            _memPoolSize_t;
+typedef uint32_t                            _memPoolCount_t;
+typedef binaryTree_t                        _memPoolWaitList_t;
+typedef binaryTreeNode_t                    _memPoolWaitNode_t;
+typedef uint8_t*                            _memPoolPointer_t;
+typedef enum _memPoolLock                   _memPoolLock_t;
+typedef uint32_t                            _memPoolIndex_t;
 
 
 
@@ -304,6 +334,10 @@ struct _threadControlBlock {
     _mutexId_t                              mutexWaitingFor;
     _threadOwnedMutexList_t                 *threadOwnedMutexList;
     _returnedByRelease_t                    returnedByRelease;
+    _memPoolWaitNode_t                      *memPoolWaitNode;
+    _memPoolId_t                            memPoolWaitingFor;
+    _returnedByFree_t                       returnedByFree;
+    _memPoolPointer_t                       memPoolBlockReleasedByFree;
 };
 
 
@@ -328,6 +362,19 @@ struct _mutexControlBlock {
     _threadOwnedMutexNode_t                 *threadOwnedMutexNode;
     _mutexWaitList_t                        *mutexWaitList;
     _resourceState_t                        resourceState;
+};
+
+
+
+struct _memPoolControlBlock {
+    _memPoolId_t                            id;
+    _memPoolName_t                          name;
+    _memPoolSize_t                          blockSize;
+    _memPoolCount_t                         maxBlockCount;
+    _memPoolPointer_t                       firstBlockAddress;
+    _memPoolLock_t                          *lockArray;
+    _memPoolIndex_t                         lockArrayIndex;
+    _memPoolWaitList_t                      *memPoolWaitList;
 };
 
 

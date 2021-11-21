@@ -454,6 +454,7 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
     _semaphoreWaitNode_t                  *semaphoreWaitNode;
     _mutexWaitNode_t                      *mutexWaitNode;
     _threadOwnedMutexList_t               *threadOwnedMutexList;
+    _memPoolWaitNode_t                    *memPoolWaitNode;
 
     while(true) {
         newThread = (_threadControlBlock_t*)malloc(sizeof(_threadControlBlock_t));
@@ -585,6 +586,21 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
 
         newThread -> returnedByRelease = ReturnedByReleaseUnset;
 
+        memPoolWaitNode = _listCreateNewMemPoolWaitNode(threadId);
+        if (memPoolWaitNode == NULL) {
+            returnValue = NULL;
+            break;
+        }
+        else {
+            newThread -> memPoolWaitNode = memPoolWaitNode;
+        }
+
+        newThread -> memPoolWaitingFor = NULL;
+
+        newThread -> returnedByFree = ReturnedByFreeUnset;
+
+        newThread -> memPoolBlockReleasedByFree = NULL;
+
 
 
         break;
@@ -601,6 +617,9 @@ void _threadCreateNewSystemCall(_threadCreateNewArg_t *arg) {
         free(threadSuspendedNode);
         free(threadTerminatedNode);
         free(semaphoreWaitNode);
+        free(mutexWaitNode);
+        free(threadOwnedMutexList);
+        free(memPoolWaitNode);
     }
     else {
         if (_listInsertToReadyList(threadId) == StatusOk) {

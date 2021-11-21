@@ -68,6 +68,14 @@ typedef _mutexType_t                        mutexType_t;
 
 
 
+typedef _memPoolId_t                        memPoolId_t;
+typedef _memPoolName_t                      memPoolName_t;
+typedef _memPoolSize_t                      memPoolSize_t;
+typedef _memPoolCount_t                     memPoolCount_t;
+typedef _memPoolPointer_t                   memPoolPointer_t;
+
+
+
 
 
 rtosStatus_t                                rtosInitialize(void);
@@ -112,6 +120,16 @@ mutexId_t                                   mutexCreateNew(mutexName_t name, mut
 rtosStatus_t                                mutexDelete(mutexId_t id);
 rtosStatus_t                                mutexGet(mutexId_t id, kernelTick_t timeOut);
 rtosStatus_t                                mutexRelease(mutexId_t id);
+
+
+
+memPoolName_t                               memPoolGetName(memPoolId_t id);
+memPoolId_t                                 memPoolCreateNew(   memPoolName_t name,
+                                                                memPoolSize_t blockSize,
+                                                                memPoolCount_t maxBlockCount);
+rtosStatus_t                                memPoolDelete(memPoolId_t id);
+memPoolPointer_t                            memPoolAllocate(memPoolId_t id, _kernelTick_t timeOut);
+rtosStatus_t                                memPoolFree(memPoolId_t id, memPoolPointer_t block);
 
 
 

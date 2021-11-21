@@ -211,6 +211,28 @@ _rtosStatus_t _kernelSystemCallByNumber(_kernelSystemCallArg_t *systemCallArg) {
 
 
 
+        case MemPoolGetNameSystemCallNumber:
+            _memPoolGetNameSystemCall(specificSystemCallArg);
+            break;
+        case MemPoolCreateNewSystemCallNumber:
+            _memPoolCreateNewSystemCall(specificSystemCallArg);
+            break;
+        case MemPoolDeleteSystemCallNumber:
+            _memPoolDeleteSystemCall(specificSystemCallArg);
+            break;
+        case MemPoolAllocateSystemCallNumber:
+            _memPoolAllocateSystemCall(specificSystemCallArg);
+            break;
+        case MemPoolFreeSystemCallNumber:
+            _memPoolFreeSystemCall(specificSystemCallArg);
+            break;
+        case MemPoolFreeFromInterruptSystemCallNumber:
+            _memPoolFreeFromInterruptSystemCall(specificSystemCallArg);
+            break;
+
+
+
+
         default:
             break;
     }
@@ -339,6 +361,23 @@ _rtosStatus_t _kernelWaitListHandler(void) {
 
                     _listDeleteFromMutexWaitList(thread -> mutexWaitingFor, threadId);
                     thread -> mutexWaitingFor = NULL;
+
+                    nextThreadId = _listGetNextWaitList(waitListNumber, threadId);
+                    _listDeleteFromWaitList(threadId, waitListNumber);
+                    thread -> returnTick = 0;
+
+                    _listInsertToReadyList(threadId);
+                    thread -> state = ThreadStateReady;
+
+                    if (_kernelCheckForContextSwitchAfterInsert(threadId) == true) {
+
+                        _kernelContextSwitchRequest();
+                    }
+                }
+                else if (thread -> memPoolWaitingFor != NULL) {
+
+                    _listDeleteFromMemPoolWaitList(thread -> memPoolWaitingFor, threadId);
+                    thread -> memPoolWaitingFor = NULL;
 
                     nextThreadId = _listGetNextWaitList(waitListNumber, threadId);
                     _listDeleteFromWaitList(threadId, waitListNumber);

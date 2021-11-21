@@ -115,4 +115,15 @@ _bool_t                                 _listIsEmptyTerminatedList(void);
 
 
 
+_memPoolWaitNode_t                     *_listCreateNewMemPoolWaitNode(_threadId_t id);
+_memPoolWaitList_t                     *_listCreateNewMemPoolWaitList(void);
+_rtosStatus_t                           _listInsertToMemPoolWaitList(_memPoolId_t memPoolId, _threadId_t threadId);
+_rtosStatus_t                           _listDeleteFromMemPoolWaitList(_memPoolId_t memPoolId, _threadId_t threadId);
+_threadId_t                             _listGetMinMemPoolWaitList(_memPoolId_t id);
+_threadId_t                             _listGetMaxMemPoolWaitList(_memPoolId_t id);
+_listSize_t                             _listGetSizeMemPoolWaitList(_memPoolId_t id);
+_bool_t                                 _listIsEmptyMemPoolWaitList(_memPoolId_t id);
+
+
+
 #endif /* RTOS_INCLUDE_LIST_H_ */

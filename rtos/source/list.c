@@ -1178,3 +1178,164 @@ _bool_t _listIsEmptyTerminatedList(void) {
     return returnValue;
 }
 
+
+
+_memPoolWaitNode_t* _listCreateNewMemPoolWaitNode(_threadId_t id) {
+
+    _memPoolWaitNode_t                   *newNode;
+    _threadControlBlock_t                *thread;
+
+    if (id == NULL) {
+        newNode = NULL;
+    }
+    else {
+        thread = (_threadControlBlock_t*)id;
+        newNode = binaryTreeCreateNewNode(id, thread -> priority);
+    }
+    return newNode;
+}
+
+_memPoolWaitList_t* _listCreateNewMemPoolWaitList(void) {
+
+    _memPoolWaitList_t                   *newList;
+
+    newList = binaryTreeCreateNewTree();
+    return newList;
+}
+
+_rtosStatus_t _listInsertToMemPoolWaitList(_memPoolId_t memPoolId, _threadId_t threadId) {
+
+    _rtosStatus_t                        returnValue;
+    _memPoolWaitList_t                   *list;
+    _memPoolWaitNode_t                   *node;
+    _memPoolControlBlock_t               *memPool;
+    _threadControlBlock_t                *thread;
+
+    if (memPoolId == NULL || threadId == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        memPool = (_memPoolControlBlock_t*)memPoolId;
+        thread = (_threadControlBlock_t*)threadId;
+        list = memPool -> memPoolWaitList;
+        node = thread -> memPoolWaitNode;
+        binaryTreeInsert(list, node);
+        returnValue = StatusOk;
+    }
+    return returnValue;
+}
+
+_rtosStatus_t _listDeleteFromMemPoolWaitList(_memPoolId_t memPoolId, _threadId_t threadId) {
+
+    _rtosStatus_t                        returnValue;
+    _memPoolWaitList_t                   *list;
+    _memPoolWaitNode_t                   *node;
+    _memPoolControlBlock_t               *memPool;
+    _threadControlBlock_t                *thread;
+
+    if (memPoolId == NULL || threadId == NULL) {
+        returnValue = StatusErrorParameter;
+    }
+    else {
+        memPool = (_memPoolControlBlock_t*)memPoolId;
+        thread = (_threadControlBlock_t*)threadId;
+        list = memPool -> memPoolWaitList;
+        node = thread -> memPoolWaitNode;
+        if (thread -> memPoolWaitingFor == NULL) {
+            returnValue = StatusErrorList;
+        }
+        else {
+            binaryTreeDelete(list, node);
+            returnValue = StatusOk;
+        }
+    }
+    return returnValue;
+}
+
+_threadId_t _listGetMinMemPoolWaitList(_memPoolId_t id) {
+
+    _threadId_t                          minThreadId;
+    _memPoolWaitList_t                   *list;
+    _memPoolWaitNode_t                   *node;
+    _memPoolControlBlock_t               *memPool;
+
+    if (id == NULL) {
+        minThreadId = NULL;
+    }
+    else {
+        memPool = (_memPoolControlBlock_t*)id;
+        list = memPool -> memPoolWaitList;
+        if (binaryTreeGetSize(list) == 0) {
+            minThreadId = NULL;
+        }
+        else {
+            node = binaryTreeMinimum(list, list -> rootNode);
+            minThreadId = (_threadId_t)(node -> element);
+        }
+    }
+    return minThreadId;
+}
+
+_threadId_t _listGetMaxMemPoolWaitList(_memPoolId_t id) {
+
+    _threadId_t                          maxThreadId;
+    _memPoolWaitList_t                   *list;
+    _memPoolWaitNode_t                   *node;
+    _memPoolControlBlock_t               *memPool;
+
+    if (id == NULL) {
+        maxThreadId = NULL;
+    }
+    else {
+        memPool = (_memPoolControlBlock_t*)id;
+        list = memPool -> memPoolWaitList;
+        if (binaryTreeGetSize(list) == 0) {
+            maxThreadId = NULL;
+        }
+        else {
+            node = binaryTreeMaximum(list, list -> rootNode);
+            maxThreadId = (_threadId_t)(node -> element);
+        }
+    }
+    return maxThreadId;
+}
+
+_listSize_t _listGetSizeMemPoolWaitList(_memPoolId_t id) {
+
+    _listSize_t                          listSize;
+    _memPoolWaitList_t                   *list;
+    _memPoolControlBlock_t               *memPool;
+
+    if (id == NULL) {
+        listSize = 0;
+    }
+    else {
+        memPool = (_memPoolControlBlock_t*)id;
+        list = memPool -> memPoolWaitList;
+        listSize = binaryTreeGetSize(list);
+    }
+    return listSize;
+}
+
+_bool_t _listIsEmptyMemPoolWaitList(_memPoolId_t id) {
+
+    _bool_t                              returnValue;
+    _memPoolWaitList_t                   *list;
+    _memPoolControlBlock_t               *memPool;
+
+    if (id == NULL) {
+        returnValue = false;
+    }
+    else {
+        memPool = (_memPoolControlBlock_t*)id;
+        list = memPool -> memPoolWaitList;
+        if (binaryTreeGetSize(list) == 0) {
+            returnValue = true;
+        }
+        else {
+            returnValue = false;
+        }
+    }
+    return returnValue;
+}
+

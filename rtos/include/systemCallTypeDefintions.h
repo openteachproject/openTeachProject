@@ -71,6 +71,16 @@
 
 
 
+#define MemPoolSystemCallNumberBase                        768
+#define MemPoolGetNameSystemCallNumber                     MemPoolSystemCallNumberBase + 0
+#define MemPoolCreateNewSystemCallNumber                   MemPoolSystemCallNumberBase + 1
+#define MemPoolDeleteSystemCallNumber                      MemPoolSystemCallNumberBase + 2
+#define MemPoolAllocateSystemCallNumber                    MemPoolSystemCallNumberBase + 3
+#define MemPoolFreeSystemCallNumber                        MemPoolSystemCallNumberBase + 4
+#define MemPoolFreeFromInterruptSystemCallNumber           MemPoolSystemCallNumberBase + 5
+
+
+
 typedef struct _threadGetIdArg                             _threadGetIdArg_t;
 typedef struct _threadGetNameArg                           _threadGetNameArg_t;
 typedef struct _threadGetStateArg                          _threadGetStateArg_t;
@@ -100,6 +110,15 @@ typedef struct _mutexCreateNewArg                          _mutexCreateNewArg_t;
 typedef struct _mutexDeleteArg                             _mutexDeleteArg_t;
 typedef struct _mutexGetArg                                _mutexGetArg_t;
 typedef struct _mutexReleaseArg                            _mutexReleaseArg_t;
+
+
+
+typedef struct _memPoolGetNameArg                          _memPoolGetNameArg_t;
+typedef struct _memPoolCreateNewArg                        _memPoolCreateNewArg_t;
+typedef struct _memPoolDeleteArg                           _memPoolDeleteArg_t;
+typedef struct _memPoolAllocateArg                         _memPoolAllocateArg_t;
+typedef struct _memPoolFreeArg                             _memPoolFreeArg_t;
+typedef struct _memPoolFreeFromInterruptArg                _memPoolFreeFromInterruptArg_t;
 
 
 
@@ -213,6 +232,37 @@ struct _mutexReleaseArg {
 
 
 
+struct _memPoolGetNameArg {
+    _memPoolId_t                                           memPoolIdArg;
+    _memPoolName_t                                         returnValue;
+};
+struct _memPoolCreateNewArg {
+    _memPoolName_t                                         memPoolNameArg;
+    _memPoolSize_t                                         memPoolBlockSizeArg;
+    _memPoolCount_t                                        memPoolBlockMaxCountArg;
+    _memPoolId_t                                           returnValue;
+};
+struct _memPoolDeleteArg {
+    _memPoolId_t                                           memPoolIdArg;
+    _rtosStatus_t                                          returnValue;
+};
+struct _memPoolAllocateArg {
+    _memPoolId_t                                           memPoolIdArg;
+    _kernelTick_t                                          timeOutArg;
+    _threadId_t                                            memPoolCallerIdArg;
+    _memPoolPointer_t                                      returnValue;
+};
+struct _memPoolFreeArg {
+    _memPoolId_t                                           memPoolIdArg;
+    _memPoolPointer_t                                      blockArg;
+    _rtosStatus_t                                          returnValue;
+};
+struct _memPoolFreeFromInterruptArg {
+    _memPoolId_t                                           memPoolIdArg;
+};
+
+
+
 void _threadGetNameSystemCall(_threadGetNameArg_t *arg);
 void _threadGetStateSystemCall(_threadGetStateArg_t *arg);
 void _threadGetPrioritySystemCall(_threadGetPriorityArg_t *arg);
@@ -241,6 +291,15 @@ void _mutexCreateNewSystemCall(_mutexCreateNewArg_t *arg);
 void _mutexDeleteSystemCall(_mutexDeleteArg_t *arg);
 void _mutexGetSystemCall(_mutexGetArg_t *arg);
 void _mutexReleaseSystemCall(_mutexReleaseArg_t *arg);
+
+
+
+void _memPoolGetNameSystemCall(_memPoolGetNameArg_t *arg);
+void _memPoolCreateNewSystemCall(_memPoolCreateNewArg_t *arg);
+void _memPoolDeleteSystemCall(_memPoolDeleteArg_t *arg);
+void _memPoolAllocateSystemCall(_memPoolAllocateArg_t *arg);
+void _memPoolFreeSystemCall(_memPoolFreeArg_t *arg);
+void _memPoolFreeFromInterruptSystemCall(_memPoolFreeFromInterruptArg_t *arg);
 
 
 
