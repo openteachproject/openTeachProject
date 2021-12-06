@@ -266,6 +266,7 @@ void _threadSetPrioritySystemCall(_threadSetPriorityArg_t *arg) {
             thread -> priority = newPriority;
             thread -> semaphoreWaitNode -> key = newPriority;
             thread -> mutexWaitNode -> key = newPriority;
+            thread -> memPoolWaitNode -> key = newPriority;
 
             _listInsertToReadyList(threadId);
 
@@ -339,6 +340,7 @@ void _threadSetPrioritySystemCall(_threadSetPriorityArg_t *arg) {
             thread -> priority = newPriority;
             thread -> semaphoreWaitNode -> key = newPriority;
             thread -> mutexWaitNode -> key = newPriority;
+            thread -> memPoolWaitNode -> key = newPriority;
 
             returnValue = StatusOk;
         }
@@ -735,6 +737,10 @@ void _threadTerminateSystemCall(_threadTerminateArg_t *arg) {
             _listDeleteFromMutexWaitList(thread -> mutexWaitingFor, threadId);
             thread -> mutexWaitingFor = NULL;
         }
+        else if (thread -> memPoolWaitingFor != NULL) {
+            _listDeleteFromMemPoolWaitList(thread -> memPoolWaitingFor, threadId);
+            thread -> memPoolWaitingFor = NULL;
+        }
         else {
             //Thread has not waited for a resource
         }
@@ -886,6 +892,10 @@ void _threadSuspendSystemCall(_threadSuspendArg_t *arg) {
         else if (thread -> mutexWaitingFor != NULL) {
             _listDeleteFromMutexWaitList(thread -> mutexWaitingFor, threadId);
             thread -> mutexWaitingFor = NULL;
+        }
+        else if (thread -> memPoolWaitingFor != NULL) {
+            _listDeleteFromMemPoolWaitList(thread -> memPoolWaitingFor, threadId);
+            thread -> memPoolWaitingFor = NULL;
         }
         else {
             //Thread has not waited for a resource
