@@ -301,6 +301,7 @@ void _threadSetPrioritySystemCall(_threadSetPriorityArg_t *arg) {
                 thread -> priority = newPriority;
                 thread -> semaphoreWaitNode -> key = newPriority;
                 thread -> mutexWaitNode -> key = newPriority;
+                thread -> memPoolWaitNode -> key = newPriority;
 
                 _listInsertToSemaphoreWaitList(thread -> semaphoreWaitingFor, threadId);
             }
@@ -311,14 +312,25 @@ void _threadSetPrioritySystemCall(_threadSetPriorityArg_t *arg) {
                 thread -> priority = newPriority;
                 thread -> semaphoreWaitNode -> key = newPriority;
                 thread -> mutexWaitNode -> key = newPriority;
+                thread -> memPoolWaitNode -> key = newPriority;
 
                 _listInsertToMutexWaitList(thread -> mutexWaitingFor, threadId);
             }
-            else {
-                //
-            }
+            else if (thread -> memPoolWaitingFor != NULL) {
 
-            thread -> priority = newPriority;
+                _listDeleteFromMemPoolWaitList(thread -> memPoolWaitingFor, threadId);
+
+                thread -> priority = newPriority;
+                thread -> semaphoreWaitNode -> key = newPriority;
+                thread -> mutexWaitNode -> key = newPriority;
+                thread -> memPoolWaitNode -> key = newPriority;
+
+                _listInsertToMemPoolWaitList(thread -> memPoolWaitingFor, threadId);
+            }
+            else {
+
+                thread -> priority = newPriority;
+            }
 
             returnValue = StatusOk;
         }
