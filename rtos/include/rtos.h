@@ -76,6 +76,13 @@ typedef _memPoolPointer_t                   memPoolPointer_t;
 
 
 
+typedef _userQueueId_t                      userQueueId_t;
+typedef _userQueueName_t                    userQueueName_t;
+typedef _userQueueSize_t                    userQueueSize_t;
+typedef _userQueueAddress_t                 userQueueAddress_t;
+
+
+
 
 
 rtosStatus_t                                rtosInitialize(void);
@@ -128,8 +135,23 @@ memPoolId_t                                 memPoolCreateNew(   memPoolName_t na
                                                                 memPoolSize_t blockSize,
                                                                 memPoolCount_t maxBlockCount);
 rtosStatus_t                                memPoolDelete(memPoolId_t id);
-memPoolPointer_t                            memPoolAllocate(memPoolId_t id, _kernelTick_t timeOut);
+memPoolPointer_t                            memPoolAllocate(memPoolId_t id, kernelTick_t timeOut);
 rtosStatus_t                                memPoolFree(memPoolId_t id, memPoolPointer_t block);
+
+
+
+userQueueName_t                             userQueueGetName(userQueueId_t id);
+userQueueSize_t                             userQueueGetSize(userQueueId_t id);
+userQueueId_t                               userQueueCreateNew(userQueueName_t name, userQueueSize_t bufferSize);
+rtosStatus_t                                userQueueDelete(userQueueId_t id);
+rtosStatus_t                                userQueueSend(    userQueueId_t id,
+                                                              userQueueAddress_t bufferAddress,
+                                                              userQueueSize_t bufferSize,
+                                                              kernelTick_t timeOut);
+rtosStatus_t                                userQueueReceive(    userQueueId_t id,
+                                                                 userQueueAddress_t bufferAddress,
+                                                                 userQueueSize_t bufferSize,
+                                                                 kernelTick_t timeOut);
 
 
 

@@ -47,8 +47,8 @@
 
 
 #define KernelMajorVersion                  1
-#define KernelMinorVersion                  3
-#define KernelPatchVersion                  2
+#define KernelMinorVersion                  4
+#define KernelPatchVersion                  0
 
 #define SystemCallListLength                4
 
@@ -68,6 +68,8 @@
 #define MutexNameMaxLength                  32
 
 #define MemPoolNameMaxLength                32
+
+#define UserQueueNameMaxLength              32
 
 
 
@@ -279,6 +281,14 @@ typedef uint32_t                            _memPoolIndex_t;
 
 
 
+typedef struct _userQueueControlBlock       _userQueueControlBlock_t;
+typedef void*                               _userQueueId_t;
+typedef char*                               _userQueueName_t;
+typedef uint32_t                            _userQueueSize_t;
+typedef uint8_t*                            _userQueueAddress_t;
+
+
+
 
 
 struct _kernelVersion {
@@ -375,6 +385,17 @@ struct _memPoolControlBlock {
     _memPoolLock_t                          *lockArray;
     _memPoolIndex_t                         lockArrayIndex;
     _memPoolWaitList_t                      *memPoolWaitList;
+};
+
+
+
+struct _userQueueControlBlock {
+    _userQueueId_t                          id;
+    _userQueueName_t                        name;
+    _userQueueSize_t                        bufferSize;
+    _userQueueAddress_t                     bufferAddress;
+    _semaphoreId_t                          sendSemaphoreId;
+    _semaphoreId_t                          receiveSemaphoreId;
 };
 
 
