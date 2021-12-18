@@ -173,9 +173,23 @@ SysTick_Handler:
 
 
             PUSH                        {R0, LR}
+
+
+
+            BL                          _kernelGetStartedValue
+            SUBS                        R0, #0
+            IT                          EQ
+            BEQ                         .LSysTick_HandlerExit
+
+
+
             BL                          _kernelIncreaseTick
             BL                          _kernelWaitListHandlerRequest
             BL                          _kernelContextSwitchRequest
+
+
+
+.LSysTick_HandlerExit:
             POP                         {R0, LR}
             BX                          LR
 
