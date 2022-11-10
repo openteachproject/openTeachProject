@@ -1,7 +1,6 @@
 ## What is OTP RTOS?
 OTP (Open Teach Project) is a real-time operating system, the main purpose of developing this operating system is to teach the design of an embedded operating system from scratch.This operating system helps you to jump from theory to practice through clear and simple steps and implement an operating system that has all the necessary facilities on an industrial scale.
-Among the multiple benefits this RTOS provides are real-time multithreading, inter-thread communication and synchronization, and memory management.
-OTP RTOS has many advanced features, including fast interrupt responding by removing critical sections of the kernel, an automatic thread-stack allocator, a stack overflow prediction mechanism, user space inter-thread communication,  relocatable heap memory, and a complete set of system calls.
+Among the multiple benefits that this RTOS provides, there are real-time multithreading, inter-thread communication, synchronization, and memory management. OTP RTOS has many advanced features, including fast interrupt responding by removing critical sections of the kernel, an automatic thread-stack allocator, a stack overflow prediction mechanism, user space inter-thread communication,  relocatable heap memory, and a complete set of system calls.
 ## Features
  - Supports ARM, RISC-V architectures
  - GCC/LLVM compatibility: ISO/IEC 9899:2011
